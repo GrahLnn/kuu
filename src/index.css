@@ -1,0 +1,349 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ORDER_WHITE = ["#fdfdff", "#fefeff", "#f9f9f9", "#f3f3f5"]; */
+/* ORDER_INDIGO = ["#191a23", "#2c2d42"]; */
+/* ORDER_DARKBLUE = ["#171d2d", "#232938"]; */
+:root {
+    /* light */
+    --light-bg-primary: #fdfdff;
+    --light-bg-secondary: #fefeff;
+    --light-bg-tertiary: #f9f9f9;
+    --light-bg-quaternary: #f3f3f5;
+    --light-bg-quinary: #fbfbfc;
+
+    --light-bg-gray-a: #dbdbe5;
+
+    /* dark */
+    --dark-bg-indigo-primary: #191a23;
+    --dark-bg-indigo-secondary: #2c2d42;
+
+    --dark-bg-gray-a: #343647;
+    --dark-bg-gray-b: #4a5061;
+
+    --dark-bg-blue-primary: #171d2d;
+    --dark-bg-blue-secondary: #232938;
+    --dark-bg-blue-tertiary: #202635;
+    --dark-bg-blue-quaternary: #1b2339;
+
+    --dark-text-primary: #e0e1fe;
+    --dark-text-secondary: #80838c;
+}
+@media (prefers-color-scheme: light) {
+    [contenteditable="true"]:focus {
+        caret-color: #0284c7;
+        outline: none;
+        opacity: 0.9;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    [contenteditable="true"]:focus {
+        caret-color: #7dd3fc;
+        outline: none;
+        opacity: 0.9;
+    }
+}
+
+ul::-webkit-scrollbar {
+    height: 0px;
+}
+
+ul {
+    mask: linear-gradient(
+        90deg,
+        transparent,
+        white 2rem calc(100% - 2rem),
+        transparent
+    );
+}
+
+.x-gradient {
+    mask: linear-gradient(
+        90deg,
+        transparent,
+        white 2rem calc(100% - 2rem),
+        transparent
+    );
+}
+
+.horizontal-scroll-gradient {
+    mask: linear-gradient(
+        180deg,
+        transparent, 
+        white 2rem calc(100% - 2rem),
+        transparent
+    );
+}
+
+.horizontal-scroll-gradient-without-top {
+    mask: linear-gradient(
+        180deg,
+        white 2rem calc(100% - 2rem),
+        transparent
+    );
+}
+
+.invalid-confirm {
+    animation: shake-1 0.1s ease-in-out 0s 4;
+    
+}
+
+@keyframes shake-1 {
+    0% {
+        transform: translateX(0px);
+    }
+    50% {
+        transform: translateX(2px);
+    }
+    75% {
+        transform: translateX(-2px);
+    }
+    100% {
+        transform: translateX(0px);
+    } 
+}
+
+input:focus {
+    outline: none;
+}
+
+input{
+    caret-color: #4479fb;
+
+}
+
+.responsive-img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+    margin: auto;
+    /* position: absolute; */
+}
+
+.solid {
+    transform: translateZ(0);
+}
+
+.elementToFadeInAndOut {
+    -webkit-animation: fadeinout 3s linear forwards;
+    animation: fadeinout 3s linear forwards;
+    opacity: 0;
+}
+
+@-webkit-keyframes fadeinout {
+    0%, 100% { opacity: 0; }
+    5%, 95% { opacity: 1; }
+}
+
+@keyframes fadeinout {
+    0%, 100% { opacity: 0; }
+    5%, 95% { opacity: 1; }
+}
+
+.fade-in {
+    -webkit-animation: fadeIn 200ms linear forwards; 
+    animation: fadeIn 200ms linear forwards;
+    opacity: 0;
+}
+
+.delay-fade-in {
+    -webkit-animation: fadeIn 200ms 300ms linear forwards; 
+    animation: fadeIn 200ms 300ms linear forwards;
+    opacity: 0;
+}
+
+@-webkit-keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+.fade-out {
+    -webkit-animation: fadeOut 200ms linear forwards; 
+    animation: fadeOut 200ms linear forwards;
+    opacity: 1;
+}
+
+.delay-fade-out {
+    -webkit-animation: fadeOut 200ms 300ms linear forwards; 
+    animation: fadeOut 200ms 300ms linear forwards;
+    opacity: 1;
+}
+
+
+@-webkit-keyframes fadeOut {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+@keyframes fadeOut {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+.transform-in-y {
+    animation: transformInFadeIn 200ms linear both;
+    opacity: 0;
+}
+
+@keyframes transformInFadeIn {
+    0% {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0px);
+        opacity: 1;
+    }
+}
+
+
+
+.transform-out-y {
+    animation: transformOutFadeOut 200ms linear forwards;
+    opacity: 1;
+}
+
+
+@keyframes transformOutFadeOut {
+    0% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+}
+
+
+/* [contenteditable] {
+    max-height: 24px;
+} */
+
+.top-part {
+    background-color: lightblue;
+    padding: 20px;
+    text-align: center;
+}
+
+.bottom-part {
+    background-color: lightcoral;
+    padding: 20px;
+    text-align: center;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    visibility: hidden;
+    transition: visibility 0.3s;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+
+    position: relative;
+
+}
+
+.container:hover .bottom-part {
+    visibility: visible;
+
+}
+
+[contenteditable="true"]:empty:before {
+    content: attr(placeholder);
+    /* color: #80838c;
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 10px;
+    z-index: -1; */
+    display: block;
+    color: #393a3c;
+}
+
+@media (prefers-color-scheme: dark) {
+    [contenteditable="true"]:empty:before {
+        color: #d9d9d9;
+    }
+}
+
+.input-sizer {
+  display: inline-grid;
+  vertical-align: top;
+  align-items: center;
+  position: relative;
+  /* border: solid 1px; */
+  
+  height: 24px;
+  
+  &.stacked {
+    /* padding: .5em; */
+    align-items: stretch;
+    
+    &::after,
+    input,
+    textarea {
+      grid-area: 2 / 1;
+    }
+  }
+  
+  &::after,
+  input,
+  textarea {
+    width: auto;
+    min-width: 1em;
+    grid-area: 1 / 2;
+    font: inherit;
+    font-size: 12px;
+    /* padding: 0.25em; */
+    margin: 0;
+    resize: none;
+    background: none;
+    appearance: none;
+    border: none;
+  }
+  
+  &::after {
+    content: attr(data-value) ' ';
+    visibility: hidden;
+    white-space: pre-wrap;
+  }
+  
+  &:focus-within {
+    textarea:focus,
+    input:focus {
+      outline: none;
+    }
+  }
+}
+
+.blur-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(10px); /* 调整模糊程度 */
+    z-index: -1;
+    border-radius: inherit; /* 继承父元素的圆角 */
+  }
+
+.long-string {
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.menu {
+    z-index: 1100;
+  }
