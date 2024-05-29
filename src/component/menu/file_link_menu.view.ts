@@ -65,7 +65,7 @@ class FileLinkContextMenu
   }) {
     div()
       .class(
-        `flex items-center w-full gap-2 hover:bg-[#f5f5f5] dark:hover:bg-[#2a3146] py-1 px-2 rounded cursor-pointer transition group`
+        `flex items-center w-full gap-2 hover:bg-[#f5f5f5] dark:hover:bg-[#2a3146] py-1 px-2 rounded cursor-default transition group`
       )
       .onClick(onClick);
     {

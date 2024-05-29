@@ -104,7 +104,7 @@ class ContextFrame implements ContextFrameProps, MenuEnv {
     if (this.menu === "") {
     } else {
       div()
-        .class("absolute select-none menu")
+        .class("absolute select-none menu cursor-default")
         .style({
           bottom: `${this.bottom}px`,
           left: `${this.left}px`,

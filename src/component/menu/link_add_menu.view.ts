@@ -40,34 +40,6 @@ class LinkAddContextMenu
     this.setMenu?.("");
   }
 
-  async handleFileUpload() {
-    const files = await open({
-      multiple: true,
-    });
-    if (!files) return;
-    // let lastRes: any = null;
-    let resFile: ConfirmFileRecord | null = null;
-    for (let file of files) {
-      try {
-        // const res = await importFile(file.path);
-        // this.curNode = res[1];
-        // resFile = {
-        //   ...res[0],
-        //   confirm: this.curNode ? true : false,
-        //   time: getFormattedCurrentTime(),
-        // };
-        // this.unshiftToNow!(resFile!);
-        // this.allImportHistory.unshift(resFile!);
-      } catch (err) {
-        console.log(err);
-      }
-    }
-    // this.curFile = resFile;
-
-    // const labels = await fetchLabels();
-    // this.setLabels!(labels);
-  }
-
   whenClickOutside = (e: MouseEvent) => {
     if (this.ref && !this.ref.contains(e.target)) {
       this.close();
@@ -94,7 +66,7 @@ class LinkAddContextMenu
   }) {
     div()
       .class(
-        `flex items-center w-full gap-2 hover:bg-[#f5f5f5] dark:hover:bg-[#2a3146] py-1 px-2 rounded cursor-pointer transition group`
+        `flex items-center w-full gap-2 hover:bg-[#f5f5f5] dark:hover:bg-[#2a3146] py-1 px-2 rounded cursor-default transition group`
       )
       .onClick(onClick);
     {
