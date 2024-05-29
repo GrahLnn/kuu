@@ -19,12 +19,14 @@ import ContextMenuButton from "../button/context_menu_button.view";
 import { ModalState } from "../../app/data/modal_state";
 import { Icon } from "../../icon/all_icon.view";
 import { MenuEnv } from "../../app/data/type";
+import { open } from "@tauri-apps/plugin-dialog";
+import { ConfirmFileRecord } from "../../app/data/global_env";
 
-interface FileLinkContextMenuProps {}
+interface LinkAddContextMenuProps {}
 
 @View
-class FileLinkContextMenu
-  implements FileLinkContextMenuProps, ModalState, MenuEnv
+class LinkAddContextMenu
+  implements LinkAddContextMenuProps, ModalState, MenuEnv
 {
   @Env setFilterModalOpen?: ((open: boolean) => void) | undefined;
   @Env setSpaceModalOpen?: ((open: boolean) => void) | undefined;
@@ -36,7 +38,34 @@ class FileLinkContextMenu
 
   close() {
     this.setMenu?.("");
-    this.functions?.onblur();
+  }
+
+  async handleFileUpload() {
+    const files = await open({
+      multiple: true,
+    });
+    if (!files) return;
+    // let lastRes: any = null;
+    let resFile: ConfirmFileRecord | null = null;
+    for (let file of files) {
+      try {
+        // const res = await importFile(file.path);
+        // this.curNode = res[1];
+        // resFile = {
+        //   ...res[0],
+        //   confirm: this.curNode ? true : false,
+        //   time: getFormattedCurrentTime(),
+        // };
+        // this.unshiftToNow!(resFile!);
+        // this.allImportHistory.unshift(resFile!);
+      } catch (err) {
+        console.log(err);
+      }
+    }
+    // this.curFile = resFile;
+
+    // const labels = await fetchLabels();
+    // this.setLabels!(labels);
   }
 
   whenClickOutside = (e: MouseEvent) => {
@@ -96,24 +125,23 @@ class FileLinkContextMenu
       .ref(this.ref);
     {
       // @ts-ignore
-      this.buttonSnip("Open")
+      this.buttonSnip("Create documnet")
         // @ts-ignore
-        .icon(Icon.HandBookOpen)
+        .icon(Icon.File)
         .onClick(() => {
-          // this.functions?.delete();
           this.close();
         });
-      this.divider();
+
       // @ts-ignore
-      this.buttonSnip("Delete")
+      this.buttonSnip("Add a file")
         // @ts-ignore
-        .icon(Icon.FileXmark)
+        .icon(Icon.FilePlus)
         .onClick(() => {
-          this.functions?.delete();
+          this.functions?.addFile();
           this.close();
         });
     }
   }
 }
 
-export default FileLinkContextMenu as Pretty as Typed<FileLinkContextMenuProps>;
+export default LinkAddContextMenu as Pretty as Typed<LinkAddContextMenuProps>;

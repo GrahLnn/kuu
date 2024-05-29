@@ -29,15 +29,31 @@ class SpaceAddContextMenu
   @Env setSpaceModalOpen?: ((open: boolean) => void) | undefined;
   @Env setFileModalOpen?: ((open: boolean) => void) | undefined;
   @Env setMenu?: ((menu: string) => void) | undefined;
+
   @Snippet
-  buttonSnip({ content, icon }: { content: string; icon: any }) {
-    ContextMenuButton(content);
+  buttonSnip({
+    content,
+    icon,
+    onClick,
+  }: {
+    content: string;
+    icon: any;
+    onClick: () => void;
+  }) {
+    ContextMenuButton(content).onClick(onClick);
     {
       div().class("opacity-80 group-hover:opacity-100 transition");
       {
-        icon().size(16);
+        icon().size(16).lightColor("#666666").darkColor("#fafafa");
       }
     }
+  }
+
+  @Snippet
+  divider() {
+    div().class(
+      "border-b w-full border-[#edf0f3] dark:border-[#38394c] h-[2px]"
+    );
   }
 
   cmb_class = "opacity-80 group-hover:opacity-100 transition";
@@ -47,54 +63,38 @@ class SpaceAddContextMenu
       "w-64 bg-[#fcfcfc] dark:bg-[var(--dark-bg-blue-quaternary)] rounded-lg border border-[#edf0f3] dark:border-[#212234] shadow-lg p-2 flex flex-col gap-2"
     );
     {
-      ContextMenuButton("New File").onClick(() => {
-        // this.setFileModalOpen?.(true);
-        this.setMenu?.("");
-      });
-      {
-        div().class("opacity-80 group-hover:opacity-100 transition");
-        {
-          Icon.FilePlus().size(16).lightColor("#666666").darkColor("#fafafa");
-        }
-      }
-      ContextMenuButton("New Space").onClick(() => {
-        this.setSpaceModalOpen?.(true);
-        this.setMenu?.("");
-      });
-      {
-        div().class("opacity-80 group-hover:opacity-100 transition");
-        {
-          Icon.TableColNewRight()
-            .size(16)
-            .lightColor("#666666")
-            .darkColor("#fafafa");
-        }
-      }
-
-      ContextMenuButton("New Folder");
-      {
-        div().class("opacity-80 group-hover:opacity-100 transition");
-        {
-          Icon.FolderPlus().size(16).lightColor("#666666").darkColor("#fafafa");
-        }
-      }
-
-      div().class(
-        "border-b w-full border-[#edf0f3] dark:border-[#38394c] h-[2px]"
-      );
-
-      ContextMenuButton("New Tab").onClick(() => {
-        this.setFilterModalOpen?.(true);
-      });
-      {
-        div().class("opacity-80 group-hover:opacity-100 transition solid");
-        {
-          Icon.DuplicatePlus()
-            .size(16)
-            .lightColor("#666666")
-            .darkColor("#fafafa");
-        }
-      }
+      // @ts-ignore
+      this.buttonSnip("New File")
+        // @ts-ignore
+        .icon(Icon.FilePlus)
+        .onClick(() => {
+          // this.setFileModalOpen?.(true);
+          this.setMenu?.("");
+        });
+      // @ts-ignore
+      this.buttonSnip("New Space")
+        // @ts-ignore
+        .icon(Icon.TableColNewRight)
+        .onClick(() => {
+          // this.setSpaceModalOpen?.(true);
+          this.setMenu?.("");
+        });
+      // @ts-ignore
+      this.buttonSnip("New Folder")
+        // @ts-ignore
+        .icon(Icon.FolderPlus)
+        .onClick(() => {
+          this.setMenu?.("");
+        });
+      this.divider();
+      // @ts-ignore
+      this.buttonSnip("New Tab")
+        // @ts-ignore
+        .icon(Icon.DuplicatePlus)
+        .onClick(() => {
+          this.setFilterModalOpen?.(true);
+          this.setMenu?.("");
+        });
     }
   }
 }

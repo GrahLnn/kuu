@@ -20,7 +20,7 @@ import {
   audio,
   use,
 } from "@dlightjs/dlight";
-import ImgViewer from "../file_present/img_viewer.view";
+import ImgViewer from "../file_viewer/img_viewer.view";
 import { getPdfBase64 } from "../../app/services/cmds";
 
 interface PDFViewerProp {

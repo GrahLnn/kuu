@@ -28,7 +28,9 @@ class App {
   menuPosition: Position = { l: 0, t: 0, w: 0, h: 0, r: 0, b: 0 };
   transformPosition: TransformPosition = { x: 0, y: 0 };
   changeMenu = (newMenu: string) => {
-    this.curMenu = newMenu;
+    if (this.curMenu !== newMenu) {
+      this.curMenu = newMenu;
+    }
   };
   updateMenuPosition = (newPosition: Position) => {
     this.menuPosition = newPosition;

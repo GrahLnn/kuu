@@ -156,4 +156,10 @@ export const Icon = {
   HandBookOpen: createIcon(
     '<svg xmlns="http://www.w3.org/2000/svg" width="size" height="size" viewBox="0 0 18 18"><g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" stroke="#212121"><line x1="9" y1="2.946" x2="9" y2="4.5"></line><path d="M16.25,8V3.487c0-.354-.181-.68-.486-.86-.637-.376-1.726-.863-3.14-.863-1.89,0-3.198,.872-3.624,1.182-.425-.31-1.734-1.181-3.624-1.182-1.414,0-2.503,.487-3.14,.863-.305,.18-.486,.502-.486,.856,0,1.618,0,6.498,0,9.09,0,.697,.696,1.188,1.344,.933,.27-.106,.573-.204,.906-.28"></path><path d="M17.25,15.225c0-2.059-.236-3.639-1-4.223-.875-.669-3.152-.838-5.295-.232l-1.33-2.827c-.293-.626-1.037-.896-1.663-.603h0c-.625,.292-.896,1.036-.604,1.661l2.561,5.456-2.724-.501c-.587-.108-1.167,.224-1.371,.785h0c-.232,.637,.098,1.34,.736,1.569l2.616,.941"></path></g></svg>'
   ) as Pretty as Typed<IconProps>,
+  File: createIcon(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="size" height="size" viewBox="0 0 18 18"><g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" stroke="#212121"><path d="M15.16,6.25h-3.41c-.552,0-1-.448-1-1V1.852"></path><path d="M2.75,14.25V3.75c0-1.105,.895-2,2-2h5.586c.265,0,.52,.105,.707,.293l3.914,3.914c.188,.188,.293,.442,.293,.707v7.586c0,1.105-.895,2-2,2H4.75c-1.105,0-2-.895-2-2Z"></path></g></svg>'
+  ) as Pretty as Typed<IconProps>,
+  FileXmark: createIcon(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18"><g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" stroke="#212121"><line x1="5.75" y1="6.75" x2="7.75" y2="6.75"></line><line x1="5.75" y1="9.75" x2="10.25" y2="9.75"></line><path d="M15.16,6.25h-3.41c-.552,0-1-.448-1-1V1.852"></path><line x1="13.25" y1="13.25" x2="17.25" y2="17.25"></line><path d="M15.25,11.715V6.664c0-.265-.105-.52-.293-.707l-3.914-3.914c-.188-.188-.442-.293-.707-.293H4.75c-1.105,0-2,.896-2,2V14.25c0,1.104,.895,2,2,2h6.214"></path><line x1="17.25" y1="13.25" x2="13.25" y2="17.25"></line></g></svg>'
+  ) as Pretty as Typed<IconProps>,
 };

@@ -30,6 +30,7 @@ import {
   fetchFile,
   fetchLabels,
   fetchNodesByLabels,
+  linkNewFile,
   linkNodeToLabelReturnNew,
 } from "../../../app/services/cmds";
 import { FileType, LabelRecord } from "../../../app/data/type";
@@ -45,6 +46,7 @@ import { Filter, FilterEnv } from "../../../app/data/filter_state";
 import * as _ from "lodash";
 import ContentEditableLabel from "../../label/content_editable_label.view";
 import ToggleLabel from "../../label/toggle_label.view";
+import { open } from "@tauri-apps/plugin-dialog";
 
 interface NodeBoxProp {
   show: boolean;
@@ -91,6 +93,8 @@ class NodeBox implements NodeBoxProp, MenuEnv, GlobalData, FilterEnv {
   );
   isChooseLabel: boolean = false;
   chooseZoneRef: HTMLElement | null = null;
+  linksRef: HTMLElement[] = [];
+  linkAddRef: HTMLElement | null = null;
 
   whenClickOutside = (e: MouseEvent) => {
     const target = e.target as HTMLElement;
@@ -99,8 +103,9 @@ class NodeBox implements NodeBoxProp, MenuEnv, GlobalData, FilterEnv {
     }
   };
 
-  willMount() {
-    for (const path of this.node.linked_files) {
+  updateFile(files: string[]) {
+    this.files = [];
+    for (const path of files) {
       fetchFile(path).then((file) => {
         this.files.push(file);
       });
@@ -110,6 +115,10 @@ class NodeBox implements NodeBoxProp, MenuEnv, GlobalData, FilterEnv {
       this.commonPathLast = this.getLastFolderName(this.commonPath);
       this.commonPathRest = this.removeLastFolderName(this.commonPath);
     }
+  }
+
+  willMount() {
+    this.updateFile(this.node.linked_files);
   }
 
   getCommonPath(paths: string[]): string {
@@ -177,12 +186,90 @@ class NodeBox implements NodeBoxProp, MenuEnv, GlobalData, FilterEnv {
     }
   }
 
-  linksRef: HTMLElement[] = [];
+  handleLinkContext(idx: string, f: string) {
+    const target = this.linksRef[Number(idx)] as HTMLElement;
+    const { left, top, width, height, right, bottom } =
+      target.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const viewprotWidth = window.innerWidth;
+    this.curMenuFile = idx;
+    this.setFunctions?.({
+      onblur: () => {
+        this.curMenuFile = null;
+      },
+      delete: async () => {
+        await deleteFile((this.commonPath || "") + f);
+        let nodes: NodeRecord[] = await this.updateNodes();
+        this.setNodes?.(nodes);
+        if (!nodes.some((i) => _.isEqual(i.title, this.node.title))) {
+          this.setNotification?.(
+            `${this.node.title} has no linked file, so it was deleted.`
+          );
+          this.onClose();
+        } else {
+          nodes.map((i) => {
+            if (_.isEqual(i.title, this.node.title)) {
+              this.node = i;
+              console.log(i);
+              this.updateFile(i.linked_files);
+            }
+          });
+        }
+      },
+    });
+    this.setPosition?.({
+      l: left,
+      t: top,
+      w: width,
+      h: height,
+      r: viewprotWidth - right,
+      b: viewportHeight - bottom,
+    });
+    this.setMenu?.(Menu.FileLinkContext);
+  }
+
+  async addFile() {
+    console.log("link new file");
+    const files = await open({
+      multiple: true,
+    });
+    if (!files) return;
+    for (let file of files) {
+      try {
+        let node = await linkNewFile(file.path, this.node.title);
+        let nodes = await this.updateNodes();
+        this.setNodes?.(nodes);
+        this.node = node;
+        this.updateFile(node.linked_files);
+      } catch (err: any) {
+        this.setNotification?.(String(err));
+      }
+    }
+  }
+
+  handleLinkAddContext() {
+    const target = this.linkAddRef as HTMLElement;
+    const { left, top, width, height, right, bottom } =
+      target.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const viewprotWidth = window.innerWidth;
+    this.setPosition?.({
+      l: left,
+      t: top,
+      w: width,
+      h: height,
+      r: viewprotWidth - right,
+      b: viewportHeight - bottom,
+    });
+    this.setMenu?.(Menu.LinkAdd);
+    this.setFunctions?.({
+      addFile: this.addFile,
+    });
+  }
 
   Body() {
     div()
       .class(`${this.bg_a} ${this.ux_a} ${this.po_a} ${this.bd_a} `)
-
       .onClick((e) => e.stopPropagation());
     {
       div().class("flex flex-col h-full py-6 px-8 gap-4");
@@ -315,59 +402,23 @@ class NodeBox implements NodeBoxProp, MenuEnv, GlobalData, FilterEnv {
                         this.linksRef.push(ref);
                       })
                       .onClick((e: MouseEvent) => {
-                        const target = this.linksRef[
-                          Number(idx)
-                        ] as HTMLElement;
-
-                        const { left, top, width, height, right, bottom } =
-                          target.getBoundingClientRect();
-                        const viewportHeight = window.innerHeight;
-                        const viewprotWidth = window.innerWidth;
-                        this.curMenuFile = idx;
-                        this.setFunctions?.({
-                          onblur: () => {
-                            this.curMenuFile = null;
-                          },
-                          delete: async () => {
-                            await deleteFile((this.commonPath || "") + f);
-                            let nodes: NodeRecord[] = await this.updateNodes();
-                            this.setNodes?.(nodes);
-                            if (
-                              !nodes.some((i) =>
-                                _.isEqual(i.title, this.node.title)
-                              )
-                            ) {
-                              this.setNotification?.(
-                                `${this.node.title} has no linked file, so it was deleted.`
-                              );
-                              this.onClose();
-                            } else {
-                              nodes.map((i) => {
-                                if (_.isEqual(i.title, this.node.title)) {
-                                  this.node = i;
-                                }
-                              });
-                            }
-                          },
-                        });
-                        this.setPosition?.({
-                          l: left,
-                          t: top,
-                          w: width,
-                          h: height,
-                          r: viewprotWidth - right,
-                          b: viewportHeight - bottom,
-                        });
-                        this.setMenu?.(Menu.FileLinkContext);
+                        this.handleLinkContext(idx, f);
                       });
                     {
                       Icon.DotsVertical().size(14).passClick(true);
                     }
                   }
                 }
-                div().class(
-                  "flex items-center justify-center w-[27px] opacity-60 hover:opacity-100 hover:bg-zinc-300 dark:hover:bg-[#2a3146] rounded-md transition duration-300"
-                );
+                div()
+                  .class(
+                    this.menu === Menu.LinkAdd
+                      ? "flex items-center justify-center w-[27px] opacity-100 bg-zinc-300 dark:bg-[#2a3146] rounded-md"
+                      : "flex items-center justify-center w-[27px] opacity-60 hover:opacity-100 hover:bg-zinc-300 dark:hover:bg-[#2a3146] rounded-md transition duration-300"
+                  )
+                  .ref((r) => (this.linkAddRef = r))
+                  .onClick(() => {
+                    this.handleLinkAddContext();
+                  });
                 {
                   Icon.Plus().size(12).passClick(true);
                 }

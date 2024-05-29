@@ -25,6 +25,7 @@ import SpaceAddContextMenu from "./space_add_context_menu.view";
 import ArchiveMenu from "./archive_menu.view";
 import ImportAddMenu from "./import_add.view";
 import FileLinkContextMenu from "./file_link_menu.view";
+import LinkAddContextMenu from "./link_add_menu.view";
 
 interface ContextFrameProps {
   children: ChildNode[];
@@ -53,8 +54,19 @@ class ContextFrame implements ContextFrameProps, MenuEnv {
 
   @Watch
   changeDirection() {
-    if (this.menu === Menu.FileLinkContext) {
-      this.direction = "down";
+    // if (this.menu === Menu.FileLinkContext) {
+    //   this.direction = "down";
+    // }
+    switch (this.menu) {
+      case Menu.FileLinkContext:
+        this.direction = "down";
+        break;
+      case Menu.LinkAdd:
+        this.direction = "down";
+        break;
+      case "":
+        this.direction = null;
+        break;
     }
   }
 
@@ -62,7 +74,7 @@ class ContextFrame implements ContextFrameProps, MenuEnv {
     await Promise.resolve();
     const initL = this.position.l + this.offsetX!;
     const initB = this.position.b + this.position.w + 10;
-    if (this.menu === Menu.FileLinkContext) {
+    if (this.direction === "down") {
       if (initL <= 16) {
         this.left = 16;
       } else if (initL + e[0].offsetWidth >= window.innerWidth - 16) {
@@ -120,6 +132,12 @@ class ContextFrame implements ContextFrameProps, MenuEnv {
             FileLinkContextMenu().elements((els) => {
               this.setCompPosition(els);
             });
+            break;
+          case Menu.LinkAdd:
+            LinkAddContextMenu().elements((els) => {
+              this.setCompPosition(els);
+            });
+            break;
         }
       }
     }

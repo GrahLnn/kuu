@@ -43,7 +43,7 @@ class ContextMenuButton implements ContextMenuButtonProps {
   Body() {
     div()
       .class(
-        `flex items-center w-full gap-4 ${this.bgColor} p-2 rounded-lg cursor-pointer transition group`
+        `flex items-center w-full gap-4 ${this.bgColor} p-2 rounded cursor-pointer transition group`
       )
       .onClick(this.onClick);
     {

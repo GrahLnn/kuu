@@ -196,3 +196,11 @@ pub async fn delete_file(path: String) -> SurrealResult<()> {
     db::execute(sql, params).await;
     Ok(())
 }
+
+pub async fn check_file_existence(hash: &str) -> SurrealResult<bool> {
+    let sql = "(SELECT * FROM file WHERE hash = $hash) == []";
+    let params = Some(vec![("hash", hash)]);
+    let mut res = db::query(sql, params).await?;
+    let check: Option<bool> = res.take(0)?;
+    Ok(check.unwrap())
+}

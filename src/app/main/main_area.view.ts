@@ -18,7 +18,7 @@ import { name3, names1, names2 } from "../data/pre_define_data";
 import { Icon } from "../../icon/all_icon.view";
 import MagneticButton from "../../component/button/magnetic_button.view";
 import { GlobalData, NodeRecord, SpaceRecord } from "../data/global_env";
-import storePathGuide from "../../component/guide/storePathGuide.view";
+import storePathGuide from "../../component/guide/store_path_guide.view";
 import { NodesCollection } from "../data/global_env";
 import AudioPlayer from "../../component/present/audio_player.view";
 import { fetchAllNodes, fetchNodesByLabels } from "../services/cmds";

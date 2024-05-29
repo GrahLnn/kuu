@@ -48,7 +48,7 @@ import {
 } from "../../services/cmds";
 import { formatString } from "../../data/utils";
 
-import ImgViewer from "../../../component/file_present/img_viewer.view";
+import ImgViewer from "../../../component/file_viewer/img_viewer.view";
 import AudioPlayer from "../../../component/present/audio_player.view";
 import PDFViewer from "../../../component/present/pdf_viewer.view";
 import { FileType, getFileType } from "../../data/type";

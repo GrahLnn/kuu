@@ -5,6 +5,7 @@ export enum Menu {
   Archive = "Archive",
   ImportAdd = "ImportAdd",
   FileLinkContext = "FileLinkContext",
+  LinkAdd = "LinkAdd",
 }
 
 export interface LabelRecord {

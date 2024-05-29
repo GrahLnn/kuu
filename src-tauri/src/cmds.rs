@@ -18,20 +18,25 @@ type CmdResult<T = ()> = Result<T, String>;
 
 #[tauri::command]
 pub async fn import_file(path: String) -> CmdResult<(FileRecord, Option<NodeRecord>)> {
-    let file_path = Path::new(&path);
-    let metadata = async_std::fs::metadata(&path)
+    let record = service::gen_file_record(path)
         .await
         .map_err(|e| e.to_string())?;
-    if metadata.is_dir() {
-        dbg!("The path is a directory, not a file");
-        return Err("The path is a directory, not a file".to_string());
-    }
-    let record = file::gen_file_info(file_path.to_path_buf()).map_err(|e| e.to_string())?;
 
     match service::create_import(record, vec![]).await {
         SurrealResult::Ok((file, node)) => Ok((file, node)),
         SurrealResult::Err(e) => Err(e.to_string()),
     }
+}
+
+#[tauri::command]
+pub async fn link_new_file(path: String, title: String) -> CmdResult<NodeRecord> {
+    let record = service::gen_file_record(path)
+        .await
+        .map_err(|e| e.to_string())?;
+    let node = service::link_new_file(record, title)
+        .await
+        .map_err(|e| e.to_string())?;
+    Ok(node)
 }
 
 #[tauri::command]

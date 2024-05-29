@@ -85,3 +85,10 @@ export async function fetchFile(path: string): Promise<FileRecord> {
 export async function deleteFile(path: string) {
   await invoke("delete_file", { path });
 }
+
+export async function linkNewFile(
+  path: string,
+  title: string
+): Promise<NodeRecord> {
+  return await invoke("link_new_file", { path, title });
+}
