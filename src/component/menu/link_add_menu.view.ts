@@ -97,7 +97,7 @@ class LinkAddContextMenu
       .ref(this.ref);
     {
       // @ts-ignore
-      this.buttonSnip("Create documnet")
+      this.buttonSnip("Create documnet(unimpled)")
         // @ts-ignore
         .icon(Icon.File)
         .onClick(() => {
@@ -110,6 +110,14 @@ class LinkAddContextMenu
         .icon(Icon.FilePlus)
         .onClick(() => {
           this.functions?.addFile();
+          this.close();
+        });
+
+      // @ts-ignore
+      this.buttonSnip("File from other node(unimpled)")
+        // @ts-ignore
+        .icon(Icon.CodeMerge)
+        .onClick(() => {
           this.close();
         });
     }

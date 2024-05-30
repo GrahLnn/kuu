@@ -366,18 +366,18 @@ class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
         //   this.isTitleFocus = true;
         // })
         // .onBlur((e) => {
-        //   const target = e.target as HTMLElement;
-        //   if (target.textContent?.trim() === "") {
-        //     target.textContent = this.curNode!.title;
-        //   } else {
-        //     this.isTitleFocus = false;
-        //     updateNodeTitle(this.curNode!.title, target.textContent!.trim())
-        //       .then(() => {
-        //         this.curNode!.title = target.textContent!.trim();
-        //       })
-        //       .catch(() => {
-        //         target.textContent = this.curNode!.title;
-        //       });
+        // const target = e.target as HTMLElement;
+        // if (target.textContent?.trim() === "") {
+        //   target.textContent = this.curNode!.title;
+        // } else {
+        //   this.isTitleFocus = false;
+        //   updateNodeTitle(this.curNode!.title, target.textContent!.trim())
+        //     .then(() => {
+        //       this.curNode!.title = target.textContent!.trim();
+        //     })
+        //     .catch(() => {
+        //       target.textContent = this.curNode!.title;
+        //     });
         //   }
         // })
         // .onKeyDown((e: KeyboardEvent) => {

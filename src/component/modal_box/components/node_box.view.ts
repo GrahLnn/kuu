@@ -32,6 +32,7 @@ import {
   fetchNodesByLabels,
   linkNewFile,
   linkNodeToLabelReturnNew,
+  updateNodeTitle,
 } from "../../../app/services/cmds";
 import { FileType, LabelRecord } from "../../../app/data/type";
 import PDFViewer from "../../present/pdf_viewer.view";
@@ -47,6 +48,8 @@ import * as _ from "lodash";
 import ContentEditableLabel from "../../label/content_editable_label.view";
 import ToggleLabel from "../../label/toggle_label.view";
 import { open } from "@tauri-apps/plugin-dialog";
+import { Warnings } from "../../../app/data/type";
+import { Warning } from "postcss";
 
 interface NodeBoxProp {
   show: boolean;
@@ -95,6 +98,13 @@ class NodeBox implements NodeBoxProp, MenuEnv, GlobalData, FilterEnv {
   chooseZoneRef: HTMLElement | null = null;
   linksRef: HTMLElement[] = [];
   linkAddRef: HTMLElement | null = null;
+  timmer: any;
+  warnings: Warnings = {
+    Empty: "title cannot be empty...",
+    Exists: "node already exists...",
+    None: "",
+  };
+  token: string = "None";
 
   whenClickOutside = (e: MouseEvent) => {
     const target = e.target as HTMLElement;
@@ -119,6 +129,20 @@ class NodeBox implements NodeBoxProp, MenuEnv, GlobalData, FilterEnv {
 
   willMount() {
     this.updateFile(this.node.linked_files);
+    if (this.timmer) {
+      clearTimeout(this.timmer);
+    }
+  }
+
+  invalidTitle(token: string) {
+    if (this.timmer) {
+      clearTimeout(this.timmer);
+    }
+    this.token = token;
+    this.warnings["None"] = this.warnings[token];
+    this.timmer = setTimeout(() => {
+      this.token = "None";
+    }, 5000);
   }
 
   getCommonPath(paths: string[]): string {
@@ -276,21 +300,62 @@ class NodeBox implements NodeBoxProp, MenuEnv, GlobalData, FilterEnv {
       {
         div().class("flex items-center");
         {
-          Icon.Nodes().size(24);
-          Icon.ChevronRight().class("mx-2");
-
-          div(this.node.title)
-            .class(
-              "text-[14px] text-black/70 dark:text-white/80 font-semibold text-left"
-            )
-            .contentEditable("true")
-            .onKeyDown((e) => {
-              const target = e.target as HTMLElement;
-              if (e.key === "Enter") {
-                e.preventDefault();
-                target.blur();
-              }
-            });
+          div().class("flex items-center");
+          {
+            Icon.Nodes().size(24);
+            Icon.ChevronRight().class("mx-2");
+          }
+          div().class("relative");
+          {
+            div(this.node.title)
+              .class(
+                "text-[14px] text-black/70 dark:text-white/80 font-semibold text-left long-string w-full min-w-[10px]"
+              )
+              .contentEditable("true")
+              .onKeyDown((e) => {
+                const target = e.target as HTMLElement;
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  target.blur();
+                }
+              })
+              .onBlur((e) => {
+                const target = e.target as HTMLElement;
+                if (target.textContent?.trim() === "") {
+                  target.textContent = this.node!.title;
+                  // this.titleWarning = "title cannot be empty...";
+                  this.invalidTitle("Empty");
+                } else if (target.textContent!.trim() !== this.node!.title) {
+                  updateNodeTitle(this.node!.title, target.textContent!.trim())
+                    .then(async () => {
+                      this.node!.title = target.textContent!.trim();
+                      let nodes = await this.updateNodes();
+                      this.setNodes?.(nodes);
+                    })
+                    .catch(() => {
+                      // this.titleWarning = "title already exists...";
+                      this.invalidTitle("Exists");
+                      target.textContent = this.node!.title;
+                    });
+                }
+              });
+            // TODO 添加命名构造器的指示
+            div().class(
+              this.token !== "None"
+                ? "absolute cursor-default flex items-center transition duration-300 opacity-100"
+                : "absolute cursor-default flex items-center transition duration-300 opacity-0"
+            );
+            {
+              Icon.CircleInfo()
+                .lightColor("#eb001c")
+                .darkColor("#ff0825")
+                .size(10);
+              div().class("w-1");
+              div(this.warnings[this.token]).class(
+                "text-[10px] opacity-60 text-nowrap"
+              );
+            }
+          }
         }
         div().class(
           "overflow-auto scroll-able modalbox-content mt-2 h-full flex flex-col gap-4"
@@ -426,15 +491,31 @@ class NodeBox implements NodeBoxProp, MenuEnv, GlobalData, FilterEnv {
             }
           }
 
-          for (const file of this.files) {
-            if (file.logo === FileType.PDF) {
-              PDFViewer(file.path);
-            } else if (file.logo === FileType.Audio) {
-              AudioPlayer(file.path).transparent(false);
-            } else if (file.logo === FileType.Image) {
-              ImgShow(file.path);
+          if (
+            !this.files.some((file) =>
+              [FileType.PDF, FileType.Audio, FileType.Image].includes(
+                file.logo as FileType
+              )
+            )
+          ) {
+            if (this.files.length === 1) {
+              NoneShow("No preview for this file.");
             } else {
-              NoneShow("No Preview Available for this file.");
+              NoneShow("No preview for these files.");
+            }
+          } else {
+            for (const file of this.files) {
+              switch (file.logo) {
+                case FileType.PDF:
+                  PDFViewer(file.path);
+                  break;
+                case FileType.Audio:
+                  AudioPlayer(file.path).transparent(false);
+                  break;
+                case FileType.Image:
+                  ImgShow(file.path);
+                  break;
+              }
             }
           }
         }

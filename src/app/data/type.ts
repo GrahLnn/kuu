@@ -30,6 +30,10 @@ export enum FileType {
   Other = "other",
 }
 
+export interface Warnings {
+  [key: string]: string;
+}
+
 export enum HistoryState {
   Now = "Now",
   OneMinAgo = "1 min ago",

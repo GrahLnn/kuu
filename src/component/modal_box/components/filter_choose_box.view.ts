@@ -18,16 +18,13 @@ import InvalidConfirmButton from "../../button/invalid_confirm_button.view";
 import { FilterEnv, Filter, FilterLevel } from "../../../app/data/filter_state";
 import { Icon } from "../../../icon/all_icon.view";
 import { GlobalData } from "../../../app/data/global_env";
-import { LabelRecord } from "../../../app/data/type";
+import { LabelRecord, Warnings } from "../../../app/data/type";
 
 interface FilterChooseBoxProps {
   show: boolean;
   onClose: () => void;
 }
-interface Warnings {
-  [key: string]: string;
-  // 其他属性...
-}
+
 @View
 class FilterChooseBox implements FilterChooseBoxProps, FilterEnv, GlobalData {
   @Prop show = required;
