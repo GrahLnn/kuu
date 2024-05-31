@@ -47,7 +47,7 @@ class EditableLabel implements EditableLabelProp, GlobalData {
     div().class(`${this.position} ${this.ui_border} ${this.ui_bg} ${this.ux}`);
     {
       div(this.content)
-        .class(`dark:text-white opacity-80 text-[12px] cursor-text min-w-[4px]`)
+        .class(`dark:text-white opacity-80 text-[12px] cursor-text min-w-[8px]`)
         .contentEditable("true")
         .onKeyDown((e) => {
           if (e.key === "Enter") {
