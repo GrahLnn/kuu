@@ -63,6 +63,7 @@ import NoneShow from "../../component/present/none_show.view";
 import { fetchImgBase64 } from "../services/cmds";
 import ImgShow from "../../component/present/img_show.view";
 import * as _ from "lodash";
+import { isIgnored } from "../data/utils";
 
 interface ImportAreaProps {}
 
@@ -141,8 +142,8 @@ class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
       directory: true,
     });
     if (!folderPath) return;
-    const files = await fetchPreFiles(folderPath);
-
+    const prefiles = await fetchPreFiles(folderPath);
+    const files = prefiles.filter((file) => !isIgnored(file.path));
     let resFile: ConfirmFileRecord | null = null;
     for (let file of files) {
       try {
