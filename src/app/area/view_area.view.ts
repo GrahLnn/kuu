@@ -133,31 +133,47 @@ class ViewArea implements ViewAreaProps, GlobalData {
   }
 
   @Snippet
+  emptyTrait() {
+    div().class("w-full h-full m-auto");
+    {
+      div("No traits...");
+    }
+  }
+
+  @Snippet
   whenShow() {
     div().class("flex gap-2 flex-wrap px-4 py-2");
     {
-      FnDashEditableLabel("Add Label")
+      FnDashEditableLabel("Add trait")
         .leftIcon(Icon.Plus)
         .blurFn(this.addLabelAndUpdateLabels);
       for (const label of this.labels!) {
         if (label.is_assignable) {
           EditableLabel(label.title);
         }
-        // else {
-        //   PresentedLabel(label.title);
-        // }
       }
     }
   }
 
   @Snippet
   whenDelete() {
-    div().class("flex gap-2 flex-wrap px-4 py-2");
-    {
-      for (const label of this.labels!) {
-        if (label.is_assignable) {
-          DeletableLabel(label.title);
+    if (
+      this.labels!.map((l) => (l.is_assignable ? l : null)).filter(
+        (l) => l !== null
+      ).length > 0
+    ) {
+      div().class("flex gap-2 flex-wrap px-4 py-2");
+      {
+        for (const label of this.labels!) {
+          if (label.is_assignable) {
+            DeletableLabel(label.title);
+          }
         }
+      }
+    } else {
+      div().class("w-full h-full flex items-center justify-center");
+      {
+        div("No traits...").class("text-gray-400 dark:text-gray-500");
       }
     }
   }

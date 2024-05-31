@@ -53,7 +53,8 @@ pub fn run() {
             cmds::delete_file,
             cmds::link_new_file,
             cmds::add_new_label,
-            cmds::update_label
+            cmds::update_label,
+            cmds::delete_label
         ])
         .plugin(tauri_plugin_dialog::init())
         .run(tauri::generate_context!())

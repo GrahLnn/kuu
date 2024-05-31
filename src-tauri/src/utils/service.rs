@@ -114,3 +114,22 @@ pub async fn update_label_and_relates(old_label: String, new_label: String) -> R
 
     Ok(())
 }
+
+pub async fn delete_label(label: String) -> Result<(), String> {
+    let sql = r#"
+        LET $label = SELECT VALUE id FROM ONLY label WHERE title = $title LIMIT 1;
+        LET $relate_nodes = SELECT VALUE <-labeled.in FROM ONLY $label LIMIT 1;
+        FOR $node IN $relate_nodes {
+            UPDATE $node SET labels -= $title;
+        };
+        LET $relate_files = SELECT VALUE ->linked.out FROM $relate_nodes;
+        FOR $file IN $relate_files {
+            UPDATE $file SET labels -= $title;
+        };
+        DELETE $label;
+    "#;
+    let params = Some(vec![("title", label.as_str())]);
+    db::execute(sql, params).await;
+
+    Ok(())
+}

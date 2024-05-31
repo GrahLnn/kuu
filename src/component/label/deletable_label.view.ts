@@ -4,18 +4,23 @@ import {
   ContentProp,
   required,
   div,
+  Env,
   type Typed,
   type Pretty,
 } from "@dlightjs/dlight";
 import Label from "./label.view";
 import { Icon } from "../../icon/all_icon.view";
+import { deleteLabel, fetchLabels } from "../../app/services/cmds";
+import { GlobalData } from "../../app/data/global_env";
+import { LabelRecord } from "../../app/data/type";
 
 interface DeletableLabelProp {
   content: ContentProp<string>;
 }
 @View
-export class DeletableLabel {
+export class DeletableLabel implements DeletableLabelProp, GlobalData {
   @Content content: ContentProp<string> = required;
+  @Env setLabels?: ((labels: LabelRecord[]) => void) | undefined;
 
   ui_border = "border rounded-md border-gray-300 dark:border-[#494b65]";
   ui_bg = "bg-[var(--light-bg-tertiary)] dark:bg-[var(--dark-bg-gray-a)]";
@@ -28,7 +33,16 @@ export class DeletableLabel {
       div().class("w-0.5");
       Label(this.content).class("opacity-80");
       div().class("w-1");
-      Icon.XMark().class("opacity-60 hover:opacity-90 transition-all");
+      div().onClick(async () => {
+        await deleteLabel(this.content);
+        let labels = await fetchLabels();
+        this.setLabels?.(labels);
+      });
+      {
+        Icon.XMark()
+          .class("opacity-60 hover:opacity-90 transition-all")
+          .passClick(true);
+      }
     }
   }
 }

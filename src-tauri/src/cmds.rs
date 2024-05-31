@@ -211,3 +211,9 @@ pub async fn update_label(old_title: String, new_title: String) -> CmdResult<()>
         .map_err(|e| e.to_string())?;
     Ok(())
 }
+
+#[tauri::command]
+pub async fn delete_label(title: String) -> CmdResult<()> {
+    service::delete_label(title).await;
+    Ok(())
+}

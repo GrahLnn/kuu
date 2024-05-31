@@ -100,3 +100,7 @@ export async function addNewLabel(title: string) {
 export async function updateLabel(oldTitle: string, newTitle: string) {
   await invoke("update_label", { oldTitle, newTitle });
 }
+
+export async function deleteLabel(title: string) {
+  await invoke("delete_label", { title });
+}
