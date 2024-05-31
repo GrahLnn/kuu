@@ -21,12 +21,9 @@ pub async fn create_node_record(node: NodeRecord) -> SurrealResult<()> {
     let params = Some(vec![("title", node.title.as_str())]);
     let mut res = db::query(sql, params).await?;
     let check: Option<bool> = res.take(0)?;
-    if check == Some(false) {
-        return Ok(());
-    } else {
+    if check.unwrap() {
         let _: Vec<NodeRecord> = db::create("node", node).await?;
     }
-
     Ok(())
 }
 

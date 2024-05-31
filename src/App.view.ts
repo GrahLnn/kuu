@@ -7,7 +7,12 @@ import PresentRecordsArea from "./app/main/main_area.view";
 import { MenuEnv, FaceEnv, FaceEnum } from "./app/data/type";
 import ContextFrame from "./component/menu/context_frame.view";
 import SpaceAddContextMenu from "./component/menu/space_add_context_menu.view";
-import { FilterEnv, Filter, FilterLevel } from "./app/data/filter_state";
+import {
+  FilterEnv,
+  Filter,
+  FilterLevel,
+  GuideEnv,
+} from "./app/data/filter_state";
 import { ModalState } from "./app/data/modal_state";
 import SArea from "./app/main/second_area.view";
 import { GlobalData, NodeRecord } from "./app/data/global_env";
@@ -16,6 +21,7 @@ import { fetchLabels } from "./app/services/cmds";
 import * as _ from "lodash";
 import { filtersStore } from "./app/services/tauri";
 import DemoWarning from "./component/notification/demo_warning.view";
+import { Guide } from "./app/data/type";
 
 @Main
 @View
@@ -144,6 +150,12 @@ class App {
     this.face = face;
   };
 
+  // ...guide...
+  guideArea = Guide.Import;
+  setGuideArea = (area: string) => {
+    this.guideArea = area as Guide;
+  };
+
   // ...global data...
   labels: LabelRecord[] = [];
   setLabels = (labels: LabelRecord[]) => {
@@ -234,66 +246,71 @@ class App {
     {
       env<FaceEnv>().setFace(this.setFace).face(this.face);
       {
-        env<MenuEnv>()
-          .menu(this.curMenu)
-          .position(this.menuPosition)
-          .transformPosition(this.transformPosition)
-          .setMenu(this.changeMenu)
-          .setPosition(this.updateMenuPosition)
-          .setTransform(this.updateTransformPosition)
-          .offsetX(this.offsetX)
-          .offsetY(this.offsetY)
-          .setOffsetX(this.setOffsetX)
-          .setOffsetY(this.setOffsetY)
-          .data(this.data)
-          .setData(this.setData)
-          .functions(this.functions)
-          .setFunctions(this.setFunctions);
+        env<GuideEnv>()
+          .guideArea(this.guideArea)
+          .setGuideArea(this.setGuideArea);
         {
-          env<FilterEnv>()
-            .curFilter(this.curFilter)
-            .filters(this.filters)
-            .addFilter(this.addFilter)
-            .allFilterNames(this.allNames)
-            .removeFilter(this.removeFilter)
-            .setCurFilter(this.changeCurFilter)
-            .updateFilter(this.updateFilter);
-
+          env<MenuEnv>()
+            .menu(this.curMenu)
+            .position(this.menuPosition)
+            .transformPosition(this.transformPosition)
+            .setMenu(this.changeMenu)
+            .setPosition(this.updateMenuPosition)
+            .setTransform(this.updateTransformPosition)
+            .offsetX(this.offsetX)
+            .offsetY(this.offsetY)
+            .setOffsetX(this.setOffsetX)
+            .setOffsetY(this.setOffsetY)
+            .data(this.data)
+            .setData(this.setData)
+            .functions(this.functions)
+            .setFunctions(this.setFunctions);
           {
-            env<ModalState>()
-              .filterModalOpen(this.filterModalOpen)
-              .setFilterModalOpen(this.setFilterModalOpen)
-              .spaceModalOpen(this.spaceModalOpen)
-              .setSpaceModalOpen(this.setSpaceModalOpen)
-              .fileModalOpen(this.fileModalOpen)
-              .setFileModalOpen(this.setFileModalOpen)
-              .nodeModalOpen(this.nodeModalOpen)
-              .setNodeModalOpen(this.setNodeModalOpen);
+            env<FilterEnv>()
+              .curFilter(this.curFilter)
+              .filters(this.filters)
+              .addFilter(this.addFilter)
+              .allFilterNames(this.allNames)
+              .removeFilter(this.removeFilter)
+              .setCurFilter(this.changeCurFilter)
+              .updateFilter(this.updateFilter);
+
             {
-              switch (this.face) {
-                case FaceEnum.Aggregate:
-                  div()
-                    .class(this.ui)
-                    .onClick(() => {
+              env<ModalState>()
+                .filterModalOpen(this.filterModalOpen)
+                .setFilterModalOpen(this.setFilterModalOpen)
+                .spaceModalOpen(this.spaceModalOpen)
+                .setSpaceModalOpen(this.setSpaceModalOpen)
+                .fileModalOpen(this.fileModalOpen)
+                .setFileModalOpen(this.setFileModalOpen)
+                .nodeModalOpen(this.nodeModalOpen)
+                .setNodeModalOpen(this.setNodeModalOpen);
+              {
+                switch (this.face) {
+                  case FaceEnum.Aggregate:
+                    div()
+                      .class(this.ui)
+                      .onClick(() => {
+                        this.changeMenu("");
+                      });
+                    {
+                      SidePanel();
+                      if (this.curFilter?.name === "Components") {
+                        Library();
+                      } else if (this.curFilter) {
+                        PresentRecordsArea();
+                      }
+                    }
+                    break;
+                  case FaceEnum.Diverge:
+                    SArea().onClick(() => {
                       this.changeMenu("");
                     });
-                  {
-                    SidePanel();
-                    if (this.curFilter?.name === "Components") {
-                      Library();
-                    } else if (this.curFilter) {
-                      PresentRecordsArea();
-                    }
-                  }
-                  break;
-                case FaceEnum.Diverge:
-                  SArea().onClick(() => {
-                    this.changeMenu("");
-                  });
-                  break;
+                    break;
+                }
+                DemoWarning();
+                ContextFrame();
               }
-              DemoWarning();
-              ContextFrame();
             }
           }
         }

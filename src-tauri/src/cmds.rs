@@ -192,3 +192,22 @@ pub async fn delete_file(path: String) -> CmdResult<()> {
     graph::delete_file_and_update_network(path).await;
     Ok(())
 }
+
+#[tauri::command]
+pub async fn add_new_label(title: String) -> CmdResult<()> {
+    let label = LabelRecord {
+        title,
+        is_assignable: true,
+        time: chrono::Local::now().timestamp_millis(),
+    };
+    let _ = label::create_label_record(label).await;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn update_label(old_title: String, new_title: String) -> CmdResult<()> {
+    service::update_label_and_relates(old_title, new_title)
+        .await
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}

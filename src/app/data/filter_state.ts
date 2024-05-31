@@ -10,6 +10,11 @@ export interface FilterEnv {
   updateFilter?: (oldF: Filter, newF: Filter) => void;
 }
 
+export interface GuideEnv {
+  guideArea?: string;
+  setGuideArea?: (area: string) => void;
+}
+
 export class Filter {
   constructor(
     public name: string,

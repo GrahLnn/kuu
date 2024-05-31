@@ -114,7 +114,7 @@ class LinkAddContextMenu
         });
 
       // @ts-ignore
-      this.buttonSnip("File from other node(unimpled)")
+      this.buttonSnip("Move from node(unimpled)")
         // @ts-ignore
         .icon(Icon.CodeMerge)
         .onClick(() => {

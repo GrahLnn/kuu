@@ -11,12 +11,14 @@ use surrealdb::Result as SurrealResult;
 
 pub async fn create_import(
     mut file: FileRecord,
-    labels: Vec<String>,
+    mut labels: Vec<String>,
 ) -> SurrealResult<(FileRecord, Option<node::NodeRecord>)> {
     let check = file::check_file_existence(&file.hash).await?;
     if !check {
         return Ok((file, None));
     }
+    let self_labels = file.labels.clone();
+    labels.retain(|label| !self_labels.contains(label));
     file.labels.extend(labels.clone());
     let file_record: Vec<FileRecord> = db::create("file", file.clone()).await?;
     let record = file_record.get(0).unwrap();
@@ -25,13 +27,23 @@ pub async fn create_import(
     let node = node::gen_node(node_title.clone());
     let _ = node::create_node_record(node.clone()).await;
 
-    for title in file.labels.clone() {
+    for title in labels {
         let label = label::LabelRecord {
             title: title.clone(),
             is_assignable: true,
             time: chrono::Utc::now().timestamp_millis(),
         };
         let _ = label::create_label_record(label).await;
+        graph::link_node_to_label(node_title.clone(), title).await;
+    }
+    for title in self_labels {
+        let label = label::LabelRecord {
+            title: title.clone(),
+            is_assignable: false,
+            time: chrono::Utc::now().timestamp_millis(),
+        };
+        let _ = label::create_label_record(label).await;
+        graph::link_node_to_label(node_title.clone(), title).await;
     }
     graph::link_node_to_file(node_title.clone(), record.hash.clone()).await;
     let node = node::fetch_node(node_title).await?;
@@ -77,4 +89,28 @@ pub async fn link_new_file(
         .await
         .map_err(|e| e.to_string())?;
     Ok(node)
+}
+
+pub async fn update_label_and_relates(old_label: String, new_label: String) -> Result<(), String> {
+    let sql = r#"
+        LET $label = SELECT VALUE id FROM ONLY label WHERE title = $old LIMIT 1;
+        UPDATE $label SET title = $new;
+        LET $relate_nodes = SELECT VALUE <-labeled.in FROM ONLY $label LIMIT 1;
+        FOR $node IN $relate_nodes {
+            UPDATE $node SET labels -= $old;
+            UPDATE $node SET labels += $new;
+        };
+        LET $relate_files = SELECT VALUE ->linked.out FROM $relate_nodes;
+        FOR $file IN $relate_files {
+            UPDATE $file SET labels -= $old;
+            UPDATE $file SET labels += $new;
+        };
+    "#;
+    let params = Some(vec![
+        ("old", old_label.as_str()),
+        ("new", new_label.as_str()),
+    ]);
+    db::execute(sql, params).await;
+
+    Ok(())
 }

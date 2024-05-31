@@ -16,33 +16,38 @@ import {
 } from "@dlightjs/dlight";
 import MagneticButton from "../button/magnetic_button.view";
 import { Icon } from "../../icon/all_icon.view";
-import { FaceEnv, FaceEnum } from "../../app/data/type";
+import { FaceEnv, FaceEnum, Guide } from "../../app/data/type";
+import { GuideEnv } from "../../app/data/filter_state";
 
 interface GuideBarProp {}
 
 @View
-class GuideBar implements GuideBarProp, FaceEnv {
+class GuideBar implements GuideBarProp, FaceEnv, GuideEnv {
   @Env setFace?: ((face: FaceEnum) => void) | undefined;
-  //   backIcon = new Icon.ArrowLeft();
+  @Env guideArea?: string;
+  @Env setGuideArea?: ((area: string) => void) | undefined;
 
   @Snippet
   FuncButton({
     content,
     icon,
     focus,
+    onClick,
   }: {
     content: string;
     icon: any;
     focus?: boolean;
+    onClick?: () => void;
   }) {
     MagneticButton()
       .linkContent(false)
       .mainClass("w-full py-4 group")
       .roundedClass("rounded-lg")
-      .focus(focus);
+      .focus(focus)
+      .onClick(onClick);
     {
       div().class(
-        focus
+        content === this.guideArea
           ? "flex flex-col items-center gap-2 opacity-100 group-hover:opacity-100 transition"
           : "flex flex-col items-center gap-2 opacity-80 group-hover:opacity-100 transition"
       );
@@ -68,7 +73,13 @@ class GuideBar implements GuideBarProp, FaceEnv {
       );
       {
         //@ts-ignore
-        this.FuncButton("Import").icon(Icon.AddItem).focus(true);
+        this.FuncButton(Guide.Import)
+          //@ts-ignore
+          .icon(Icon.AddItem)
+          .focus(this.guideArea === Guide.Import)
+          .onClick(() => {
+            this.setGuideArea?.(Guide.Import);
+          });
         //@ts-ignore
         this.FuncButton("Tool").icon(Icon.Siren);
         //@ts-ignore
@@ -76,7 +87,13 @@ class GuideBar implements GuideBarProp, FaceEnv {
         //@ts-ignore
         this.FuncButton("Space").icon(Icon.StackPerspective2);
         //@ts-ignore
-        this.FuncButton("View").icon(Icon.Layers3);
+        this.FuncButton(Guide.View)
+          //@ts-ignore
+          .icon(Icon.Layers3)
+          .focus(this.guideArea === Guide.View)
+          .onClick(() => {
+            this.setGuideArea?.(Guide.View);
+          });
         //@ts-ignore
         this.FuncButton("Roadmap").icon(Icon.Itinerary4);
       }

@@ -30,6 +30,15 @@ export enum FileType {
   Other = "other",
 }
 
+export enum Guide {
+  Import = "Import",
+  View = "View",
+  Tool = "Tool",
+  Rule = "Rule",
+  Space = "Space",
+  Roadmap = "Roadmap",
+}
+
 export interface Warnings {
   [key: string]: string;
 }

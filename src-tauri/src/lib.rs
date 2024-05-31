@@ -51,7 +51,9 @@ pub fn run() {
             cmds::fetch_nodes_by_labels,
             cmds::fetch_file,
             cmds::delete_file,
-            cmds::link_new_file
+            cmds::link_new_file,
+            cmds::add_new_label,
+            cmds::update_label
         ])
         .plugin(tauri_plugin_dialog::init())
         .run(tauri::generate_context!())

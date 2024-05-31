@@ -92,3 +92,11 @@ export async function linkNewFile(
 ): Promise<NodeRecord> {
   return await invoke("link_new_file", { path, title });
 }
+
+export async function addNewLabel(title: string) {
+  await invoke("add_new_label", { title });
+}
+
+export async function updateLabel(oldTitle: string, newTitle: string) {
+  await invoke("update_label", { oldTitle, newTitle });
+}

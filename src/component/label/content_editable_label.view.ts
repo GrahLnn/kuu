@@ -18,7 +18,7 @@ interface ContentEditableLabelProp {
   blurFn: (s: string) => Promise<void>;
 }
 @View
-export class ContentEditableLabel {
+export class FnDashEditableLabel {
   @Content content: ContentProp<string> = required;
   @Prop leftIcon: any = null;
   @Prop blurFn: (s: string) => Promise<void> = required;
@@ -106,4 +106,4 @@ export class ContentEditableLabel {
   }
 }
 
-export default ContentEditableLabel as Pretty as Typed<ContentEditableLabelProp>;
+export default FnDashEditableLabel as Pretty as Typed<ContentEditableLabelProp>;

@@ -168,4 +168,7 @@ export const Icon = {
   CodeMerge: createIcon(
     '<svg xmlns="http://www.w3.org/2000/svg" width="size" height="size" viewBox="0 0 18 18"><g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" stroke="#212121"><line x1="4.75" y1="6.25" x2="4.75" y2="16.25"></line><path d="M11,12.5c-3.452,0-6.25-2.798-6.25-6.25"></path><circle cx="4.75" cy="4" r="2.25"></circle><circle cx="13.25" cy="12.5" r="2.25"></circle></g></svg>'
   ) as Pretty as Typed<IconProps>,
+  BookOpen2: createIcon(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="size" height="size" viewBox="0 0 12 12"><g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" stroke="#212121"><path d="m6,11.25l4.525-1.293c.429-.123.725-.515.725-.962V2.076c0-.664-.636-1.144-1.275-.962l-3.975,1.136"></path><path d="m2.025,1.114l3.975,1.136v9l-4.525-1.293c-.429-.123-.725-.515-.725-.962V2.076c0-.664.636-1.144,1.275-.962Z"></path></g></svg>'
+  ) as Pretty as Typed<IconProps>,
 };
