@@ -295,9 +295,10 @@ class App {
                       });
                     {
                       SidePanel();
-                      if (this.curFilter?.name === "Components") {
-                        Library();
-                      } else if (this.curFilter) {
+                      // if (this.curFilter?.name === "Components") {
+                      //   Library();
+                      // } else
+                      if (this.curFilter) {
                         PresentRecordsArea();
                       }
                     }

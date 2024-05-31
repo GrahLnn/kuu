@@ -68,7 +68,7 @@ class SidePanel
   @Env nodes?: NodeRecord[] | undefined;
   @Env setNotification?: ((notification: string) => void) | undefined;
 
-  fv: string[] = ["My Records", "Components"];
+  fv: string[] = ["My Records"];
 
   filterExists(filters: Filter[], filterToCheck: Filter) {
     return filters.some((filter) => _.isEqual(filter, filterToCheck));
