@@ -61,7 +61,6 @@ class App {
     this.functions = functions;
   };
 
-
   // ...filter...
   allNames: string[] = [];
   curFilter: Filter | null = null;
@@ -203,14 +202,14 @@ class App {
   timer: any = null;
 
   didMount() {
-    this.timer = setInterval(() => {
-      const currentTimestamp = Date.now();
-      const updatedHistory = updateHistory(
-        this.importHistory,
-        currentTimestamp
-      );
-      this.importHistory = updatedHistory;
-    }, 1000);
+    // this.timer = setInterval(() => {
+    //   const currentTimestamp = Date.now();
+    //   const updatedHistory = updateHistory(
+    //     this.importHistory,
+    //     currentTimestamp
+    //   );
+    //   this.importHistory = updatedHistory;
+    // }, 1000);
   }
   willUnmount() {
     if (this.timer) {
@@ -229,10 +228,10 @@ class App {
     this.setLabels(labels);
     this.notification =
       "This is a highly experimental demo. Do not use it in production.";
-    const isWindows = navigator.userAgent.indexOf('Windows') !== -1;
+    const isWindows = navigator.userAgent.indexOf("Windows") !== -1;
 
     if (isWindows) {
-      document.documentElement.setAttribute('data-platform', 'windows');
+      document.documentElement.setAttribute("data-platform", "windows");
     }
   }
 
