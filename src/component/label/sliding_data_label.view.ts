@@ -99,7 +99,7 @@ class SlidingDataLabel implements SlidingDataLabelProp {
             } shrink-0 dark:text-white my-auto select-none rounded-full px-0.5 text-center ${
               this.style ? `font-${this.style}` : ""
             } transition-opacity cursor-default ${
-              this.size ? `text-[${this.size}px]` : "text-[7px]"
+              this.size ? `text-[${this.size}px]` : "text-[8px]"
             } `
           )
           .onMouseEnter(() => {

@@ -145,13 +145,13 @@ class SidePanel
 
   Body() {
     div().class(
-      `w-56 bg-white dark:bg-[var(--dark-bg-blue-primary)] border-r border-[#edf0f3] dark:border-[#212234] flex flex-col gap-2 overflow-x-hidden items-center pt-6 pb-2 shrink-0 h-screen transition`
+      `w-56 bg-white dark:bg-[var(--dark-bg-blue-primary)] border-r border-[#edf0f3] dark:border-[#212234] flex flex-col gap-2 overflow-x-hidden items-center pt-2 pb-2 shrink-0 h-screen transition`
     );
 
     {
       this.favoriteZone();
       div("Space 1").class(
-        "text-left w-full text-[12px] dark:opacity-60 opacity-60 dark:text-white text-[#676769] transition font-semibold px-4 mt-4"
+        "text-left w-full text-[12px] dark:opacity-60 opacity-60 dark:text-white text-[#676769] transition font-semibold px-4 mt-2"
       );
       this.spaceZone();
       div().class("flex w-full justify-between px-4");

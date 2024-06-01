@@ -65,7 +65,7 @@ import ImgShow from "../../component/present/img_show.view";
 import * as _ from "lodash";
 import { isIgnored } from "../data/utils";
 
-interface ImportAreaProps {}
+interface ImportAreaProps { }
 
 @View
 class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
@@ -147,8 +147,9 @@ class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
     let resFile: ConfirmFileRecord | null = null;
     for (let file of files) {
       try {
+        const now = new Date().getTime();
         const res = await importFileWithLabels(file.path, file.folders);
-
+        console.log(new Date().getTime() - now);
         this.curNode = res[1];
         resFile = {
           ...res[0],

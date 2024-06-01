@@ -13,10 +13,14 @@ pub async fn create_import(
     mut file: FileRecord,
     mut labels: Vec<String>,
 ) -> SurrealResult<(FileRecord, Option<node::NodeRecord>)> {
+    let start = chrono::Utc::now().timestamp_millis();
     let check = file::check_file_existence(&file.hash).await?;
+    
     if !check {
         return Ok((file, None));
     }
+    let point = chrono::Utc::now().timestamp_millis() ;
+
     let self_labels = file.labels.clone();
     labels.retain(|label| !self_labels.contains(label));
     file.labels.extend(labels.clone());
@@ -27,6 +31,9 @@ pub async fn create_import(
     let node = node::gen_node(node_title.clone());
     let _ = node::create_node_record(node.clone()).await;
 
+    let pointa = chrono::Utc::now().timestamp_millis();
+    
+
     for title in labels {
         let label = label::LabelRecord {
             title: title.clone(),
@@ -36,6 +43,8 @@ pub async fn create_import(
         let _ = label::create_label_record(label).await;
         graph::link_node_to_label(node_title.clone(), title).await;
     }
+    let pointb = chrono::Utc::now().timestamp_millis();
+
     for title in self_labels {
         let label = label::LabelRecord {
             title: title.clone(),
@@ -45,9 +54,11 @@ pub async fn create_import(
         let _ = label::create_label_record(label).await;
         graph::link_node_to_label(node_title.clone(), title).await;
     }
+    let pointc = chrono::Utc::now().timestamp_millis() ;
     graph::link_node_to_file(node_title.clone(), record.hash.clone()).await;
     let node = node::fetch_node(node_title).await?;
-
+    let pointd = chrono::Utc::now().timestamp_millis() ;
+    println!("p: {}, pointa: {}, pointb: {}, pointc: {}, pointd: {}, total: {}",point -start, pointa-point, pointb-pointa, pointc-pointb, pointd-pointc, pointd-start);
     Ok((file, Some(node)))
 }
 

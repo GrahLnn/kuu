@@ -53,7 +53,6 @@ pub async fn import_file_with_labels(
         return Err("The path is a directory, not a file".to_string());
     }
     let record = file::gen_file_info(file_path.to_path_buf()).map_err(|e| e.to_string())?;
-
     match service::create_import(record, labels).await {
         SurrealResult::Ok((file, node)) => Ok((file, node)),
         SurrealResult::Err(e) => Err(e.to_string()),
