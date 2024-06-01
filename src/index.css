@@ -30,6 +30,7 @@
     --dark-text-primary: #e0e1fe;
     --dark-text-secondary: #80838c;
 }
+
 @media (prefers-color-scheme: light) {
     [contenteditable="true"]:focus {
         caret-color: #0284c7;
@@ -51,65 +52,60 @@ ul::-webkit-scrollbar {
 }
 
 ul {
-    mask: linear-gradient(
-        90deg,
-        transparent,
-        white 2rem calc(100% - 2rem),
-        transparent
-    );
+    mask: linear-gradient(90deg,
+            transparent,
+            white 2rem calc(100% - 2rem),
+            transparent);
 }
 
 .x-gradient {
-    mask: linear-gradient(
-        90deg,
-        transparent,
-        white 2rem calc(100% - 2rem),
-        transparent
-    );
+    mask: linear-gradient(90deg,
+            transparent,
+            white 2rem calc(100% - 2rem),
+            transparent);
 }
 
 .horizontal-scroll-gradient {
-    mask: linear-gradient(
-        180deg,
-        transparent, 
-        white 2rem calc(100% - 2rem),
-        transparent
-    );
+    mask: linear-gradient(180deg,
+            transparent,
+            white 2rem calc(100% - 2rem),
+            transparent);
 }
 
 .horizontal-scroll-gradient-without-top {
-    mask: linear-gradient(
-        180deg,
-        white 2rem calc(100% - 2rem),
-        transparent
-    );
+    mask: linear-gradient(180deg,
+            white 2rem calc(100% - 2rem),
+            transparent);
 }
 
 .invalid-confirm {
     animation: shake-1 0.1s ease-in-out 0s 4;
-    
+
 }
 
 @keyframes shake-1 {
     0% {
         transform: translateX(0px);
     }
+
     50% {
         transform: translateX(2px);
     }
+
     75% {
         transform: translateX(-2px);
     }
+
     100% {
         transform: translateX(0px);
-    } 
+    }
 }
 
 input:focus {
     outline: none;
 }
 
-input{
+input {
     caret-color: #4479fb;
 
 }
@@ -134,58 +130,94 @@ input{
 }
 
 @-webkit-keyframes fadeinout {
-    0%, 100% { opacity: 0; }
-    5%, 95% { opacity: 1; }
+
+    0%,
+    100% {
+        opacity: 0;
+    }
+
+    5%,
+    95% {
+        opacity: 1;
+    }
 }
 
 @keyframes fadeinout {
-    0%, 100% { opacity: 0; }
-    5%, 95% { opacity: 1; }
+
+    0%,
+    100% {
+        opacity: 0;
+    }
+
+    5%,
+    95% {
+        opacity: 1;
+    }
 }
 
 .fade-in {
-    -webkit-animation: fadeIn 200ms linear forwards; 
+    -webkit-animation: fadeIn 200ms linear forwards;
     animation: fadeIn 200ms linear forwards;
     opacity: 0;
 }
 
 .delay-fade-in {
-    -webkit-animation: fadeIn 200ms 300ms linear forwards; 
+    -webkit-animation: fadeIn 200ms 300ms linear forwards;
     animation: fadeIn 200ms 300ms linear forwards;
     opacity: 0;
 }
 
 @-webkit-keyframes fadeIn {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }
 
 @keyframes fadeIn {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }
 
 .fade-out {
-    -webkit-animation: fadeOut 200ms linear forwards; 
+    -webkit-animation: fadeOut 200ms linear forwards;
     animation: fadeOut 200ms linear forwards;
     opacity: 1;
 }
 
 .delay-fade-out {
-    -webkit-animation: fadeOut 200ms 300ms linear forwards; 
+    -webkit-animation: fadeOut 200ms 300ms linear forwards;
     animation: fadeOut 200ms 300ms linear forwards;
     opacity: 1;
 }
 
 
 @-webkit-keyframes fadeOut {
-    0% { opacity: 1; }
-    100% { opacity: 0; }
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
 }
 
 @keyframes fadeOut {
-    0% { opacity: 1; }
-    100% { opacity: 0; }
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
 }
 
 .transform-in-y {
@@ -198,6 +230,7 @@ input{
         transform: translateY(20px);
         opacity: 0;
     }
+
     100% {
         transform: translateY(0px);
         opacity: 1;
@@ -217,6 +250,7 @@ input{
         transform: translateY(0);
         opacity: 1;
     }
+
     100% {
         transform: translateY(20px);
         opacity: 0;
@@ -278,53 +312,54 @@ input{
 }
 
 .input-sizer {
-  display: inline-grid;
-  vertical-align: top;
-  align-items: center;
-  position: relative;
-  /* border: solid 1px; */
-  
-  height: 24px;
-  
-  &.stacked {
-    /* padding: .5em; */
-    align-items: stretch;
-    
+    display: inline-grid;
+    vertical-align: top;
+    align-items: center;
+    position: relative;
+    /* border: solid 1px; */
+
+    height: 24px;
+
+    &.stacked {
+        /* padding: .5em; */
+        align-items: stretch;
+
+        &::after,
+        input,
+        textarea {
+            grid-area: 2 / 1;
+        }
+    }
+
     &::after,
     input,
     textarea {
-      grid-area: 2 / 1;
+        width: auto;
+        min-width: 1em;
+        grid-area: 1 / 2;
+        font: inherit;
+        font-size: 12px;
+        /* padding: 0.25em; */
+        margin: 0;
+        resize: none;
+        background: none;
+        appearance: none;
+        border: none;
     }
-  }
-  
-  &::after,
-  input,
-  textarea {
-    width: auto;
-    min-width: 1em;
-    grid-area: 1 / 2;
-    font: inherit;
-    font-size: 12px;
-    /* padding: 0.25em; */
-    margin: 0;
-    resize: none;
-    background: none;
-    appearance: none;
-    border: none;
-  }
-  
-  &::after {
-    content: attr(data-value) ' ';
-    visibility: hidden;
-    white-space: pre-wrap;
-  }
-  
-  &:focus-within {
-    textarea:focus,
-    input:focus {
-      outline: none;
+
+    &::after {
+        content: attr(data-value) ' ';
+        visibility: hidden;
+        white-space: pre-wrap;
     }
-  }
+
+    &:focus-within {
+
+        textarea:focus,
+        input:focus {
+            outline: none;
+        }
+    }
 }
 
 .blur-background::before {
@@ -334,10 +369,12 @@ input{
     left: 0;
     width: 100%;
     height: 100%;
-    backdrop-filter: blur(10px); /* 调整模糊程度 */
+    backdrop-filter: blur(10px);
+    /* 调整模糊程度 */
     z-index: -1;
-    border-radius: inherit; /* 继承父元素的圆角 */
-  }
+    border-radius: inherit;
+    /* 继承父元素的圆角 */
+}
 
 .long-string {
     word-break: break-word;
@@ -346,4 +383,53 @@ input{
 
 .menu {
     z-index: 1100;
-  }
+}
+
+
+html[data-platform='windows'] ::-webkit-scrollbar {
+    width: 4px;
+}
+
+html[data-platform='windows'] ::-webkit-scrollbar-track-piece:start {
+    background: transparent;
+}
+
+html[data-platform='windows'] ::-webkit-scrollbar-track {
+    background: #ffffff00;
+}
+
+html[data-platform='windows'] ::-webkit-scrollbar-thumb {
+    background: #dedfe1;
+    border-radius: 4px;
+}
+
+html[data-platform='windows'] ::-webkit-scrollbar-thumb:hover {
+    background: #a5aab0;
+}
+
+@media (prefers-color-scheme: dark) {
+    html[data-platform='windows'] ::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    html[data-platform='windows'] ::-webkit-scrollbar-track-piece:start {
+        background: transparent;
+    }
+
+    html[data-platform='windows'] ::-webkit-scrollbar-track-piece:end {
+        background: transparent;
+    }
+
+    html[data-platform='windows'] ::-webkit-scrollbar-track {
+        background: #191a2300;
+    }
+
+    html[data-platform='windows'] ::-webkit-scrollbar-thumb {
+        background: #2d2f3f;
+        border-radius: 8px;
+    }
+
+    html[data-platform='windows'] ::-webkit-scrollbar-thumb:hover {
+        background: #42435c;
+    }
+}

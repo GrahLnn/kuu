@@ -61,6 +61,7 @@ class App {
     this.functions = functions;
   };
 
+
   // ...filter...
   allNames: string[] = [];
   curFilter: Filter | null = null;
@@ -228,6 +229,11 @@ class App {
     this.setLabels(labels);
     this.notification =
       "This is a highly experimental demo. Do not use it in production.";
+    const isWindows = navigator.userAgent.indexOf('Windows') !== -1;
+
+    if (isWindows) {
+      document.documentElement.setAttribute('data-platform', 'windows');
+    }
   }
 
   Body() {
