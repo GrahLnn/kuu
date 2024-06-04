@@ -210,30 +210,30 @@ class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
     }));
     let combinedFiles = shuffleArray([...exist, ...newFiles]);
     let resFile: ConfirmFileRecord | null = null;
-    // for (let file of combinedFiles) {
-    //   if (!file.exist) {
-    //     const { exist, ...rest } = file;
-    //     await justImportFile(rest);
-    //     resFile = {
-    //       ...rest,
-    //       confirm: true,
-    //       time: getFormattedCurrentTime(),
-    //     };
-    //     this.unshiftToNow!(resFile!);
-    //     this.allImportHistory.unshift(resFile!);
-    //   } else {
-    //     console.log(file.exist);
-    //     const { exist, ...rest } = file;
-    //     resFile = {
-    //       ...rest,
-    //       confirm: false,
-    //       time: getFormattedCurrentTime(),
-    //     };
-    //     this.unshiftToNow!(resFile!);
-    //     this.allImportHistory.unshift(resFile!);
-    //   }
-    // }
-    await this.processFiles(combinedFiles);
+    for (let file of combinedFiles) {
+      if (!file.exist) {
+        const { exist, ...rest } = file;
+        await justImportFile(rest);
+        resFile = {
+          ...rest,
+          confirm: true,
+          time: getFormattedCurrentTime(),
+        };
+        this.unshiftToNow!(resFile!);
+        this.allImportHistory.unshift(resFile!);
+      } else {
+        console.log(file.exist);
+        const { exist, ...rest } = file;
+        resFile = {
+          ...rest,
+          confirm: false,
+          time: getFormattedCurrentTime(),
+        };
+        this.unshiftToNow!(resFile!);
+        this.allImportHistory.unshift(resFile!);
+      }
+    }
+    // await this.processFiles(combinedFiles);
     const labels = await fetchLabels();
     this.setLabels!(labels);
   }
