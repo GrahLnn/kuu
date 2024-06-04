@@ -274,6 +274,7 @@ pub async fn gen_file_from_folder(path: String) -> CmdResult<(Vec<FileRecord>, V
 
 #[tauri::command]
 pub async fn just_import_file(file: FileRecord) -> CmdResult<()> {
+    dbg!(&file);
     service::import_file_with_node(file).await?;
     Ok(())
 }
