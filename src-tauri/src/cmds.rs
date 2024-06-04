@@ -268,7 +268,9 @@ pub async fn gen_file_from_folder(path: String) -> CmdResult<(Vec<FileRecord>, V
         .await
         .map_err(|e| e.to_string())?;
     service::check_and_gen_node(unique_files.clone()).await?;
-    dbg!(&unique_files);
+    for file in unique_files.clone() {
+        service::import_file_with_node(file).await?;
+    }
     Ok((unique_files, repeated_files))
 }
 

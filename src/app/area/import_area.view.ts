@@ -198,41 +198,51 @@ class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
     // }
     // this.curFile = resFile;
     let res = await genFileFromFolder(folderPath);
-    console.log(res);
-    let exist = res[1].map((file) => ({
-      ...file,
-      exist: true,
-    }));
-    console.log(exist);
-    let newFiles = res[0].map((file) => ({
-      ...file,
-      exist: false,
-    }));
-    let combinedFiles = shuffleArray([...exist, ...newFiles]);
-    let resFile: ConfirmFileRecord | null = null;
-    for (let file of combinedFiles) {
-      if (!file.exist) {
-        const { exist, ...rest } = file;
-        await justImportFile(rest);
-        resFile = {
-          ...rest,
-          confirm: true,
-          time: getFormattedCurrentTime(),
-        };
-        this.unshiftToNow!(resFile!);
-        this.allImportHistory.unshift(resFile!);
-      } else {
-        console.log(file.exist);
-        const { exist, ...rest } = file;
-        resFile = {
-          ...rest,
-          confirm: false,
-          time: getFormattedCurrentTime(),
-        };
-        this.unshiftToNow!(resFile!);
-        this.allImportHistory.unshift(resFile!);
-      }
+    let newFiles = res[0];
+    for (const file of newFiles) {
+      const resFile = {
+        ...file,
+        confirm: true,
+        time: getFormattedCurrentTime(),
+      };
+      this.unshiftToNow!(resFile!);
+      this.allImportHistory.unshift(resFile!);
     }
+    // console.log(res);
+    // let exist = res[1].map((file) => ({
+    //   ...file,
+    //   exist: true,
+    // }));
+    // console.log(exist);
+    // let newFiles = res[0].map((file) => ({
+    //   ...file,
+    //   exist: false,
+    // }));
+    // let combinedFiles = shuffleArray([...exist, ...newFiles]);
+    // let resFile: ConfirmFileRecord | null = null;
+    // for (let file of combinedFiles) {
+    //   if (!file.exist) {
+    //     const { exist, ...rest } = file;
+    //     await justImportFile(rest);
+    //     resFile = {
+    //       ...rest,
+    //       confirm: true,
+    //       time: getFormattedCurrentTime(),
+    //     };
+    //     this.unshiftToNow!(resFile!);
+    //     this.allImportHistory.unshift(resFile!);
+    //   } else {
+    //     console.log(file.exist);
+    //     const { exist, ...rest } = file;
+    //     resFile = {
+    //       ...rest,
+    //       confirm: false,
+    //       time: getFormattedCurrentTime(),
+    //     };
+    //     this.unshiftToNow!(resFile!);
+    //     this.allImportHistory.unshift(resFile!);
+    //   }
+    // }
     // await this.processFiles(combinedFiles);
     const labels = await fetchLabels();
     this.setLabels!(labels);
