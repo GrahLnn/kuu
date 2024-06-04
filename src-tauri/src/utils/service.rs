@@ -161,6 +161,7 @@ pub async fn gen_file_from_folder(str_path: String) -> Result<Vec<FileRecord>, S
 }
 
 pub async fn import_file_with_node(file: FileRecord) -> Result<(), String> {
+    dbg!(&file);
     let _: Vec<FileRecord> = db::create("file", file.clone())
         .await
         .map_err(|e| e.to_string())?;

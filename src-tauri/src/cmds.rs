@@ -1,4 +1,3 @@
-use crate::database::db;
 use crate::utils::audio;
 use crate::utils::file;
 use crate::utils::file::FileRecord;
@@ -11,14 +10,16 @@ use crate::utils::node;
 use crate::utils::node::NodeRecord;
 use crate::utils::pdf;
 use crate::utils::service;
+use futures::future;
+use futures::stream::{FuturesUnordered, StreamExt};
 use std::collections::HashSet;
 use std::path::Path;
 use surrealdb::Result as SurrealResult;
-use tauri;
+use tauri::command;
 
 type CmdResult<T = ()> = Result<T, String>;
 
-#[tauri::command]
+#[command]
 pub async fn import_file(path: String) -> CmdResult<(FileRecord, Option<NodeRecord>)> {
     let path = Path::new(&path);
     let record = service::gen_file_record(path)
@@ -31,7 +32,7 @@ pub async fn import_file(path: String) -> CmdResult<(FileRecord, Option<NodeReco
     }
 }
 
-#[tauri::command]
+#[command]
 pub async fn link_new_file(path: String, title: String) -> CmdResult<NodeRecord> {
     let path = Path::new(&path);
     let record = service::gen_file_record(path)
@@ -43,7 +44,7 @@ pub async fn link_new_file(path: String, title: String) -> CmdResult<NodeRecord>
     Ok(node)
 }
 
-#[tauri::command]
+#[command]
 pub async fn import_file_with_labels(
     path: String,
     labels: Vec<String>,
@@ -63,7 +64,7 @@ pub async fn import_file_with_labels(
     }
 }
 
-#[tauri::command]
+#[command]
 pub async fn get_pdf_base64(path: String) -> CmdResult<Vec<String>> {
     let path = Path::new(&path);
     let result = pdf::pdf2base64(path.to_string_lossy().to_string()).await;
@@ -73,7 +74,7 @@ pub async fn get_pdf_base64(path: String) -> CmdResult<Vec<String>> {
     }
 }
 
-#[tauri::command]
+#[command]
 pub async fn get_audio_array(path: String) -> CmdResult<Vec<u8>> {
     let result = audio::read_audio_file(path).await;
     match result {
@@ -82,7 +83,7 @@ pub async fn get_audio_array(path: String) -> CmdResult<Vec<u8>> {
     }
 }
 
-#[tauri::command]
+#[command]
 pub async fn fetch_node_by_hash(hash: String) -> CmdResult<NodeRecord> {
     let node = node::fetch_node_by_hash(hash)
         .await
@@ -90,7 +91,7 @@ pub async fn fetch_node_by_hash(hash: String) -> CmdResult<NodeRecord> {
     Ok(node)
 }
 
-#[tauri::command]
+#[command]
 pub async fn fetch_labels() -> CmdResult<Vec<LabelRecord>> {
     let labels = label::fetch_labels().await;
     match labels {
@@ -99,7 +100,7 @@ pub async fn fetch_labels() -> CmdResult<Vec<LabelRecord>> {
     }
 }
 
-#[tauri::command]
+#[command]
 pub async fn update_node_title(old_title: String, new_title: String) -> CmdResult<()> {
     node::update_node_title(old_title, new_title)
         .await
@@ -107,7 +108,7 @@ pub async fn update_node_title(old_title: String, new_title: String) -> CmdResul
     Ok(())
 }
 
-#[tauri::command]
+#[command]
 pub async fn fetch_img_base64(path: String) -> CmdResult<String> {
     let path = Path::new(&path);
     let result = img::img2base64(path).await;
@@ -117,7 +118,7 @@ pub async fn fetch_img_base64(path: String) -> CmdResult<String> {
     }
 }
 
-#[tauri::command]
+#[command]
 pub async fn add_label_and_link_node(title: String, node_title: String) -> CmdResult<()> {
     let label = LabelRecord {
         title: title.clone(),
@@ -129,7 +130,7 @@ pub async fn add_label_and_link_node(title: String, node_title: String) -> CmdRe
     Ok(())
 }
 
-#[tauri::command]
+#[command]
 pub async fn delete_node_label_link_return_new(
     node_title: String,
     label_title: String,
@@ -141,7 +142,7 @@ pub async fn delete_node_label_link_return_new(
     }
 }
 
-#[tauri::command]
+#[command]
 pub async fn link_node_to_label_return_new(
     node_title: String,
     label_title: String,
@@ -153,7 +154,7 @@ pub async fn link_node_to_label_return_new(
     }
 }
 
-#[tauri::command]
+#[command]
 pub async fn fetch_pre_files(path: String) -> CmdResult<Vec<PreFileInfo>> {
     let path = Path::new(&path);
     let initial_folders = Vec::new();
@@ -162,7 +163,7 @@ pub async fn fetch_pre_files(path: String) -> CmdResult<Vec<PreFileInfo>> {
     Ok(files)
 }
 
-#[tauri::command]
+#[command]
 pub async fn fetch_all_nodes() -> CmdResult<Vec<NodeRecord>> {
     let nodes = node::fetch_all_nodes().await;
     match nodes {
@@ -171,7 +172,7 @@ pub async fn fetch_all_nodes() -> CmdResult<Vec<NodeRecord>> {
     }
 }
 
-#[tauri::command]
+#[command]
 pub async fn fetch_nodes_by_labels(labels: Vec<String>) -> CmdResult<Vec<NodeRecord>> {
     let nodes = node::fetch_nodes_by_labels(labels).await;
     match nodes {
@@ -180,7 +181,7 @@ pub async fn fetch_nodes_by_labels(labels: Vec<String>) -> CmdResult<Vec<NodeRec
     }
 }
 
-#[tauri::command]
+#[command]
 pub async fn fetch_file(path: String) -> CmdResult<FileRecord> {
     dbg!(&path);
     let file = file::fetch_file_by_path(path).await;
@@ -190,13 +191,13 @@ pub async fn fetch_file(path: String) -> CmdResult<FileRecord> {
     }
 }
 
-#[tauri::command]
+#[command]
 pub async fn delete_file(path: String) -> CmdResult<()> {
     graph::delete_file_and_update_network(path).await;
     Ok(())
 }
 
-#[tauri::command]
+#[command]
 pub async fn add_new_label(title: String) -> CmdResult<()> {
     let label = LabelRecord {
         title,
@@ -207,7 +208,7 @@ pub async fn add_new_label(title: String) -> CmdResult<()> {
     Ok(())
 }
 
-#[tauri::command]
+#[command]
 pub async fn update_label(old_title: String, new_title: String) -> CmdResult<()> {
     service::update_label_and_relates(old_title, new_title)
         .await
@@ -215,13 +216,13 @@ pub async fn update_label(old_title: String, new_title: String) -> CmdResult<()>
     Ok(())
 }
 
-#[tauri::command]
+#[command]
 pub async fn delete_label(title: String) -> CmdResult<()> {
     let _ = service::delete_label(title).await;
     Ok(())
 }
 
-#[tauri::command]
+#[command]
 pub async fn gen_file_from_folder(path: String) -> CmdResult<(Vec<FileRecord>, Vec<FileRecord>)> {
     let files = service::gen_file_from_folder(path).await?;
     let exist_files = file::get_existence_hashs().await?;
@@ -273,10 +274,23 @@ pub async fn gen_file_from_folder(path: String) -> CmdResult<(Vec<FileRecord>, V
     //     dbg!(&file);
     //     service::import_file_with_node(file).await?;
     // }
+    let unique_files_clone = unique_files.clone();
+    let futures: FuturesUnordered<_> = unique_files_clone
+        .into_iter()
+        .map(|file| service::import_file_with_node(file))
+        .collect();
+
+    futures
+        .for_each_concurrent(100, |result| async {
+            if let Err(e) = result {
+                dbg!(e);
+            }
+        })
+        .await;
     Ok((unique_files, repeated_files))
 }
 
-#[tauri::command]
+#[command]
 pub async fn just_import_file(file: FileRecord) -> CmdResult<()> {
     dbg!(&file);
     service::import_file_with_node(file).await?;
