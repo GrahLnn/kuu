@@ -18,6 +18,8 @@ import ImportArea from "../area/import_area.view";
 import { GuideEnv } from "../data/filter_state";
 import ViewArea from "../area/view_area.view";
 import { Guide } from "../data/type";
+import ToolArea from "../area/tool_area.view";
+import RuleArea from "../area/rule_area.view";
 
 interface SAreaProps {
   onClick?: () => void;
@@ -41,6 +43,12 @@ class SArea implements SAreaProps, GuideEnv {
           break;
         case Guide.View:
           ViewArea();
+          break;
+        case Guide.Tool:
+          ToolArea();
+          break;
+        case Guide.Rule:
+          RuleArea();
           break;
       }
     }

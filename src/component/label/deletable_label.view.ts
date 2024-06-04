@@ -24,7 +24,7 @@ export class DeletableLabel implements DeletableLabelProp, GlobalData {
 
   ui_border = "border rounded-md border-gray-300 dark:border-[#494b65]";
   ui_bg = "bg-[var(--light-bg-tertiary)] dark:bg-[var(--dark-bg-gray-a)]";
-  ux = "transition-all opacity-80 hover:opacity-100 shrink-0";
+  ux = "transition-all opacity-80 hover:opacity-100 shrink-0 solid";
   position = "flex items-center px-1 py-0.5";
 
   Body() {
@@ -39,9 +39,10 @@ export class DeletableLabel implements DeletableLabelProp, GlobalData {
         this.setLabels?.(labels);
       });
       {
-        Icon.XMark()
-          .class("opacity-60 hover:opacity-90 transition-all")
-          .passClick(true);
+        div().class("opacity-40 hover:opacity-90 transition solid");
+        {
+          Icon.XMark().size(10).passClick(true);
+        }
       }
     }
   }

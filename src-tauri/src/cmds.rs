@@ -10,6 +10,7 @@ use crate::utils::node;
 use crate::utils::node::NodeRecord;
 use crate::utils::pdf;
 use crate::utils::service;
+use std::collections::HashSet;
 use std::path::Path;
 use surrealdb::Result as SurrealResult;
 use tauri;
@@ -18,6 +19,7 @@ type CmdResult<T = ()> = Result<T, String>;
 
 #[tauri::command]
 pub async fn import_file(path: String) -> CmdResult<(FileRecord, Option<NodeRecord>)> {
+    let path = Path::new(&path);
     let record = service::gen_file_record(path)
         .await
         .map_err(|e| e.to_string())?;
@@ -30,6 +32,7 @@ pub async fn import_file(path: String) -> CmdResult<(FileRecord, Option<NodeReco
 
 #[tauri::command]
 pub async fn link_new_file(path: String, title: String) -> CmdResult<NodeRecord> {
+    let path = Path::new(&path);
     let record = service::gen_file_record(path)
         .await
         .map_err(|e| e.to_string())?;
@@ -213,6 +216,64 @@ pub async fn update_label(old_title: String, new_title: String) -> CmdResult<()>
 
 #[tauri::command]
 pub async fn delete_label(title: String) -> CmdResult<()> {
-    service::delete_label(title).await;
+    let _ = service::delete_label(title).await;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn gen_file_from_folder(path: String) -> CmdResult<(Vec<FileRecord>, Vec<FileRecord>)> {
+    let files = service::gen_file_from_folder(path).await?;
+    let exist_files = file::get_existence_hashs().await?;
+    let unique_files: Vec<FileRecord> = files
+        .clone()
+        .into_iter()
+        .filter(|f| !exist_files.contains(&f.hash))
+        .collect();
+    let repeated_files: Vec<FileRecord> = files
+        .clone()
+        .into_iter()
+        .filter(|f| exist_files.contains(&f.hash))
+        .collect();
+    let exist_label = label::get_existence_labels()
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let fix_labels: HashSet<String> = unique_files
+        .iter()
+        .map(|f| f.fix_labels.clone())
+        .flatten()
+        .collect();
+    let unique_fix_labels: Vec<String> = fix_labels.difference(&exist_label).cloned().collect();
+    let clean_fix_labels: Vec<LabelRecord> = unique_fix_labels
+        .into_iter()
+        .map(|l| label::label_info(l, false))
+        .collect();
+    let assinable_labels: HashSet<String> = unique_files
+        .iter()
+        .map(|f| f.labels.clone())
+        .flatten()
+        .collect();
+    let unique_assinable_labels: Vec<String> =
+        assinable_labels.difference(&exist_label).cloned().collect();
+    let clean_assinable_labels: Vec<LabelRecord> = unique_assinable_labels
+        .into_iter()
+        .map(|l| label::label_info(l, true))
+        .collect();
+    let union_clean_labels: Vec<LabelRecord> = clean_fix_labels
+        .into_iter()
+        .chain(clean_assinable_labels.into_iter())
+        .collect();
+
+    label::just_create_label(union_clean_labels)
+        .await
+        .map_err(|e| e.to_string())?;
+    service::check_and_gen_node(unique_files.clone()).await?;
+    dbg!(&unique_files);
+    Ok((unique_files, repeated_files))
+}
+
+#[tauri::command]
+pub async fn just_import_file(file: FileRecord) -> CmdResult<()> {
+    service::import_file_with_node(file).await?;
     Ok(())
 }

@@ -56,3 +56,11 @@ const ignoredPatterns = [
 export const isIgnored = (path: string) => {
   return ignoredPatterns.some((pattern) => path.includes(pattern));
 };
+
+export function shuffleArray(array: any[]): any[] {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]]; // 交换元素
+  }
+  return array;
+}

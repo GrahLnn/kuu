@@ -104,3 +104,15 @@ export async function updateLabel(oldTitle: string, newTitle: string) {
 export async function deleteLabel(title: string) {
   await invoke("delete_label", { title });
 }
+
+export async function genFileFromFolder(
+  path: string
+): Promise<[FileRecord[], FileRecord[]]> {
+  return await invoke("gen_file_from_folder", {
+    path,
+  });
+}
+
+export async function justImportFile(file: FileRecord) {
+  await invoke("just_import_file", { file });
+}

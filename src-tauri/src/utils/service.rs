@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::path::Path;
 
 use crate::database::db;
@@ -13,15 +14,13 @@ pub async fn create_import(
     mut file: FileRecord,
     mut labels: Vec<String>,
 ) -> SurrealResult<(FileRecord, Option<node::NodeRecord>)> {
-    let start = chrono::Utc::now().timestamp_millis();
     let check = file::check_file_existence(&file.hash).await?;
-    
+
     if !check {
         return Ok((file, None));
     }
-    let point = chrono::Utc::now().timestamp_millis() ;
 
-    let self_labels = file.labels.clone();
+    let self_labels = file.fix_labels.clone();
     labels.retain(|label| !self_labels.contains(label));
     file.labels.extend(labels.clone());
     let file_record: Vec<FileRecord> = db::create("file", file.clone()).await?;
@@ -30,9 +29,6 @@ pub async fn create_import(
 
     let node = node::gen_node(node_title.clone());
     let _ = node::create_node_record(node.clone()).await;
-
-    let pointa = chrono::Utc::now().timestamp_millis();
-    
 
     for title in labels {
         let label = label::LabelRecord {
@@ -43,7 +39,6 @@ pub async fn create_import(
         let _ = label::create_label_record(label).await;
         graph::link_node_to_label(node_title.clone(), title).await;
     }
-    let pointb = chrono::Utc::now().timestamp_millis();
 
     for title in self_labels {
         let label = label::LabelRecord {
@@ -54,23 +49,21 @@ pub async fn create_import(
         let _ = label::create_label_record(label).await;
         graph::link_node_to_label(node_title.clone(), title).await;
     }
-    let pointc = chrono::Utc::now().timestamp_millis() ;
+
     graph::link_node_to_file(node_title.clone(), record.hash.clone()).await;
     let node = node::fetch_node(node_title).await?;
-    let pointd = chrono::Utc::now().timestamp_millis() ;
-    println!("p: {}, pointa: {}, pointb: {}, pointc: {}, pointd: {}, total: {}",point -start, pointa-point, pointb-pointa, pointc-pointb, pointd-pointc, pointd-start);
+
     Ok((file, Some(node)))
 }
 
-pub async fn gen_file_record(path: String) -> Result<FileRecord, String> {
-    let file_path = Path::new(&path);
+pub async fn gen_file_record(path: &Path) -> Result<FileRecord, String> {
     let metadata = async_std::fs::metadata(&path)
         .await
         .map_err(|e| e.to_string())?;
     if metadata.is_dir() {
         return Err("The path is a directory, not a file".to_string());
     }
-    let f = file::gen_file_info(file_path.to_path_buf()).map_err(|e| e.to_string())?;
+    let f = file::gen_file_info(path.to_path_buf()).map_err(|e| e.to_string())?;
     Ok(f)
 }
 
@@ -142,5 +135,53 @@ pub async fn delete_label(label: String) -> Result<(), String> {
     let params = Some(vec![("title", label.as_str())]);
     db::execute(sql, params).await;
 
+    Ok(())
+}
+
+pub async fn gen_file_from_folder(str_path: String) -> Result<Vec<FileRecord>, String> {
+    let path = Path::new(&str_path);
+    let files =
+        file::fetch_folder_files(path.to_path_buf(), Vec::new()).map_err(|e| e.to_string())?;
+    let mut hashs = HashSet::new();
+    let mut file_records = Vec::new();
+    for file in files {
+        let path = Path::new(&file.path);
+        let mut f = gen_file_record(path).await?;
+        f.labels = file
+            .folders
+            .clone()
+            .into_iter()
+            .filter(|l| !f.fix_labels.contains(l))
+            .collect();
+        if hashs.insert(f.hash.clone()) {
+            file_records.push(f);
+        }
+    }
+    Ok(file_records)
+}
+
+pub async fn import_file_with_node(file: FileRecord) -> Result<(), String> {
+    let _: Vec<FileRecord> = db::create("file", file.clone())
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let mut all_labels = file.fix_labels;
+    all_labels.extend(file.labels);
+    for l in all_labels {
+        graph::link_node_to_label(file.stem.clone(), l).await;
+    }
+    graph::link_node_to_file(file.stem.clone(), file.hash.clone()).await;
+    Ok(())
+}
+
+pub async fn check_and_gen_node(files: Vec<FileRecord>) -> Result<(), String> {
+    let nodes = node::get_existence_nodes()
+        .await
+        .map_err(|e| e.to_string())?;
+    let stem_set: HashSet<String> = files.iter().map(|f| f.stem.clone()).collect();
+    let need_create = stem_set.difference(&nodes).collect::<Vec<&String>>();
+    for stem in need_create {
+        let _ = node::create_node_record_no_check(node::gen_node(stem.clone())).await;
+    }
     Ok(())
 }

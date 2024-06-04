@@ -19,6 +19,7 @@ import {
   use,
   br,
   Watch,
+  iframe,
 } from "@dlightjs/dlight";
 import ItemBar from "../../component/bar/item_bar.view";
 import { Icon } from "../../icon/all_icon.view";
@@ -45,8 +46,10 @@ import {
   linkNodeToLabelReturnNew,
   updateNodeTitle,
   importFileWithLabels,
+  genFileFromFolder,
+  justImportFile,
 } from "../services/cmds";
-import { formatString } from "../data/utils";
+import { formatString, shuffleArray } from "../data/utils";
 
 import ImgViewer from "../../component/file_viewer/img_viewer.view";
 import AudioPlayer from "../../component/present/audio_player.view";
@@ -65,7 +68,7 @@ import ImgShow from "../../component/present/img_show.view";
 import * as _ from "lodash";
 import { isIgnored } from "../data/utils";
 
-interface ImportAreaProps { }
+interface ImportAreaProps {}
 
 @View
 class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
@@ -137,36 +140,102 @@ class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
     this.setLabels!(labels);
   }
 
+  async processFiles(concurrentFiles: any) {
+    const importPromises = concurrentFiles.map(async (file: any) => {
+      let resFile;
+      if (!file.exist) {
+        const { exist, ...rest } = file;
+        await justImportFile(rest);
+        resFile = {
+          ...rest,
+          confirm: true,
+          time: getFormattedCurrentTime(),
+        };
+      } else {
+        console.log(file.exist);
+        const { exist, ...rest } = file;
+        resFile = {
+          ...rest,
+          confirm: false,
+          time: getFormattedCurrentTime(),
+        };
+      }
+      this.unshiftToNow!(resFile!);
+      this.allImportHistory.unshift(resFile!);
+    });
+
+    await Promise.all(importPromises);
+  }
+
   async handleFolderUpload() {
     const folderPath = await open({
       directory: true,
     });
     if (!folderPath) return;
-    const prefiles = await fetchPreFiles(folderPath);
-    const files = prefiles.filter((file) => !isIgnored(file.path));
+    // const prefiles = await fetchPreFiles(folderPath);
+    // const files = prefiles.filter((file) => !isIgnored(file.path));
+    // let resFile: ConfirmFileRecord | null = null;
+    // for (let file of files) {
+    //   try {
+    //     const now = new Date().getTime();
+    //     const res = await importFileWithLabels(file.path, file.folders);
+    //     console.log(new Date().getTime() - now);
+    //     this.curNode = res[1];
+    //     resFile = {
+    //       ...res[0],
+    //       confirm: this.curNode ? true : false,
+    //       time: getFormattedCurrentTime(),
+    //     };
+
+    //     this.unshiftToNow!(resFile!);
+    //     this.allImportHistory.unshift(resFile!);
+
+    //     const labels = await fetchLabels();
+    //     this.setLabels!(labels);
+    //   } catch (err) {
+    //     console.log(err);
+    //   }
+    // }
+    // this.curFile = resFile;
+    let res = await genFileFromFolder(folderPath);
+    console.log(res);
+    let exist = res[1].map((file) => ({
+      ...file,
+      exist: true,
+    }));
+    console.log(exist);
+    let newFiles = res[0].map((file) => ({
+      ...file,
+      exist: false,
+    }));
+    let combinedFiles = shuffleArray([...exist, ...newFiles]);
     let resFile: ConfirmFileRecord | null = null;
-    for (let file of files) {
-      try {
-        const now = new Date().getTime();
-        const res = await importFileWithLabels(file.path, file.folders);
-        console.log(new Date().getTime() - now);
-        this.curNode = res[1];
-        resFile = {
-          ...res[0],
-          confirm: this.curNode ? true : false,
-          time: getFormattedCurrentTime(),
-        };
-
-        this.unshiftToNow!(resFile!);
-        this.allImportHistory.unshift(resFile!);
-
-        const labels = await fetchLabels();
-        this.setLabels!(labels);
-      } catch (err) {
-        console.log(err);
-      }
-    }
-    this.curFile = resFile;
+    // for (let file of combinedFiles) {
+    //   if (!file.exist) {
+    //     const { exist, ...rest } = file;
+    //     await justImportFile(rest);
+    //     resFile = {
+    //       ...rest,
+    //       confirm: true,
+    //       time: getFormattedCurrentTime(),
+    //     };
+    //     this.unshiftToNow!(resFile!);
+    //     this.allImportHistory.unshift(resFile!);
+    //   } else {
+    //     console.log(file.exist);
+    //     const { exist, ...rest } = file;
+    //     resFile = {
+    //       ...rest,
+    //       confirm: false,
+    //       time: getFormattedCurrentTime(),
+    //     };
+    //     this.unshiftToNow!(resFile!);
+    //     this.allImportHistory.unshift(resFile!);
+    //   }
+    // }
+    await this.processFiles(combinedFiles);
+    const labels = await fetchLabels();
+    this.setLabels!(labels);
   }
 
   @Snippet
@@ -222,7 +291,7 @@ class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
             "w-full block rounded-lg bg-zinc-200/80 dark:bg-[#2a3146] pl-8 pr-2 py-1 cursor-default"
           )
           .type("text")
-          .placeholder("From URL...");
+          .placeholder("from url...");
       }
 
       div().class("flex shrink-0 rounded-lg overflow-hidden");
@@ -237,6 +306,9 @@ class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
       }
     }
   }
+
+  @Snippet
+  webWindow() {}
 
   @Snippet
   history() {
@@ -450,10 +522,9 @@ class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
     );
     {
       this.presentFile();
-      // if (this.curFile && this.curNode) {
-
-      //   // this.configZone();
-      // }
+      // iframe()
+      //   .src("https://ralphammer.com/make-me-think/")
+      //   .class("w-full h-full");
     }
   }
 

@@ -81,9 +81,21 @@ class GuideBar implements GuideBarProp, FaceEnv, GuideEnv {
             this.setGuideArea?.(Guide.Import);
           });
         //@ts-ignore
-        this.FuncButton("Tool").icon(Icon.Siren);
+        this.FuncButton("Tool")
+          //@ts-ignore
+          .icon(Icon.Siren)
+          .focus(this.guideArea === Guide.Tool)
+          .onClick(() => {
+            this.setGuideArea?.(Guide.Tool);
+          });
         //@ts-ignore
-        this.FuncButton("Rule").icon(Icon.CubeSettings);
+        this.FuncButton("Rule")
+          //@ts-ignore
+          .icon(Icon.CubeSettings)
+          .focus(this.guideArea === Guide.Rule)
+          .onClick(() => {
+            this.setGuideArea?.(Guide.Rule);
+          });
         //@ts-ignore
         this.FuncButton("Space").icon(Icon.StackPerspective2);
         //@ts-ignore

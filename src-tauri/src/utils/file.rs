@@ -2,7 +2,7 @@ use crate::database::db;
 use blake3;
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::fs::File;
 use std::io::{self, BufReader, Read, Seek, SeekFrom};
@@ -20,6 +20,7 @@ pub struct FileRecord {
     pub logo: String,
     pub record_time: i64,
     pub labels: Vec<String>,
+    pub fix_labels: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -125,10 +126,10 @@ pub fn gen_file_info(path: PathBuf) -> io::Result<FileRecord> {
 
     let record_time = Utc::now().timestamp_millis();
 
-    let mut labels = Vec::new();
+    let mut fix_labels = Vec::new();
 
     if !ext.is_empty() {
-        labels.push(ext.clone());
+        fix_labels.push(ext.clone());
     }
 
     let file_record = FileRecord {
@@ -148,7 +149,8 @@ pub fn gen_file_info(path: PathBuf) -> io::Result<FileRecord> {
         hash,
         logo: get_file_logo(&ext).to_string(),
         record_time,
-        labels,
+        fix_labels,
+        labels: Vec::new(),
     };
 
     Ok(file_record)
@@ -203,4 +205,20 @@ pub async fn check_file_existence(hash: &str) -> SurrealResult<bool> {
     let mut res = db::query(sql, params).await?;
     let check: Option<bool> = res.take(0)?;
     Ok(check.unwrap())
+}
+
+pub async fn check_existence(hashs: Vec<String>) -> Result<Vec<String>, String> {
+    let files: Vec<FileRecord> = db::select("file").await.map_err(|e| e.to_string())?;
+    let ext_hashs: HashSet<_> = files.iter().map(|f| f.hash.clone()).collect();
+    let result: Vec<String> = hashs
+        .into_iter()
+        .filter(|h| !ext_hashs.contains(h))
+        .collect();
+    Ok(result)
+}
+
+pub async fn get_existence_hashs() -> Result<HashSet<String>, String> {
+    let files: Vec<FileRecord> = db::select("file").await.map_err(|e| e.to_string())?;
+    let hashs: HashSet<String> = files.iter().map(|f| f.hash.clone()).collect();
+    Ok(hashs)
 }

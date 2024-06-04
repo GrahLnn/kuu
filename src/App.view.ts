@@ -190,8 +190,9 @@ class App {
   };
   nodes: NodeRecord[] = [];
   setNodes = (nodes: NodeRecord[]) => {
-    this.nodes = nodes;
+    this.nodes = nodes.filter((node) => node.labels && node.labels.length > 0);
   };
+
   const: Record<string, any> = { defaultFilterName: "My Records" };
   notification: string = "";
   setNotification = (notification: string) => {

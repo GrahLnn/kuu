@@ -9,6 +9,8 @@ export interface FileRecord {
   ext: string;
   hash: string;
   record_time: number;
+  labels: string[];
+  fix_labels: string[];
 }
 
 // export class FileRecord {

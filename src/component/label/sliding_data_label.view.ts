@@ -97,7 +97,7 @@ class SlidingDataLabel implements SlidingDataLabelProp {
             `${
               this.activeTabKey === Number(idx) ? "opacity-70" : "opacity-60"
             } shrink-0 dark:text-white my-auto select-none rounded-full px-0.5 text-center ${
-              this.style ? `font-${this.style}` : ""
+              this.style ? `font-${this.style}` : "font-light"
             } transition-opacity cursor-default ${
               this.size ? `text-[${this.size}px]` : "text-[8px]"
             } `

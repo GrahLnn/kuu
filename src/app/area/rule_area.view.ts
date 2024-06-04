@@ -70,39 +70,37 @@ import SlidingDataLabel from "../../component/label/sliding_data_label.view";
 import DeletableLabel from "../../component/label/deletable_label.view";
 import EditableLabel from "../../component/label/editable_label.view";
 
-interface ViewAreaProps {}
-
-interface ToolState {
-  [key: string]: string;
-}
+interface RuleAreaProps {}
 
 @View
-class ViewArea implements ViewAreaProps, GlobalData {
+class RuleArea implements RuleAreaProps, GlobalData {
   @Env labels?: LabelRecord[] | undefined;
   @Env setLabels?: ((labels: LabelRecord[]) => void) | undefined;
   @Env setNotification?: ((notification: string) => void) | undefined;
 
-  state: ToolState = {
-    edit: "Edit",
-    delete: "Delete",
-  };
-  activeTool = Object.values(this.state)[0];
-
-  async addLabelAndUpdateLabels(t: string): Promise<void> {
-    const labels = this.labels!.map((item) => item.title);
-    if (!labels.includes(t)) {
-      await addNewLabel(t);
-      // await addLabelAndLinkNode(t, this.node.title);
-      fetchLabels().then((labels) => {
-        this.setLabels!(labels);
-      });
-    } else {
-      this.setNotification!("label already exists");
+  @Snippet
+  leftToolBar() {
+    div().class("flex px-4 gap-2 py-2 overflow-hidden shrink-0");
+    {
+      div().class("relative w-full flex items-center gap-2");
+      {
+        Icon.GlobeSerach()
+          .size(18)
+          .lightColor("#848484")
+          .darkColor("#fbfbfb")
+          .class("absolute left-2 transform -translate-y-1/2 opacity-80");
+        input()
+          .class(
+            "w-full block rounded-lg bg-zinc-200/80 dark:bg-[#2a3146] pl-8 pr-2 py-1 cursor-text"
+          )
+          .type("text")
+          .placeholder("search rule...");
+      }
     }
   }
 
   @Snippet
-  viewItem({
+  ruleItem({
     content,
     isCur,
     tags,
@@ -127,64 +125,16 @@ class ViewArea implements ViewAreaProps, GlobalData {
       "w-[296px] grow-0 shrink-0 bg-gray-100 dark:bg-[var(--dark-bg-blue-primary)] flex flex-col border-r border-[#edf0f3] dark:border-[#212234] py-[1px]"
     );
     {
+      this.leftToolBar();
       // @ts-ignore
-      this.viewItem("Trait").isCur(true).tags(["manage all traits"]);
-    }
-  }
-
-  @Snippet
-  emptyTrait() {
-    div().class("w-full h-full m-auto");
-    {
-      div("No traits...");
-    }
-  }
-
-  @Snippet
-  whenShow() {
-    div().class("flex gap-1.5 flex-wrap px-4 py-2");
-    {
-      FnDashEditableLabel("Add trait")
-        .leftIcon(Icon.Plus)
-        .blurFn(this.addLabelAndUpdateLabels);
-      for (const label of this.labels!) {
-        if (label.is_assignable) {
-          EditableLabel(label.title);
-        }
-      }
-    }
-  }
-
-  @Snippet
-  whenDelete() {
-    if (
-      this.labels!.map((l) => (l.is_assignable ? l : null)).filter(
-        (l) => l !== null
-      ).length > 0
-    ) {
-      div().class("flex gap-1.5 flex-wrap px-4 py-2");
-      {
-        for (const label of this.labels!) {
-          if (label.is_assignable) {
-            DeletableLabel(label.title);
-          }
-        }
-      }
-    } else {
-      div().class("w-full h-full flex items-center justify-center");
-      {
-        div("No traits...").class("text-gray-400 dark:text-gray-500");
-      }
-    }
-  }
-
-  @Snippet
-  whenEdit() {
-    div().class("flex gap-2 flex-wrap px-4 py-2");
-    {
-      for (const label of this.labels!) {
-        EditableLabel(label.title);
-      }
+      this.ruleItem("Preference")
+        // @ts-ignore
+        .isCur(false)
+        .tags(["manage your preferences"]);
+      // @ts-ignore
+      this.ruleItem("Language Modal").isCur(true).tags(["manage all LLMs"]);
+      // @ts-ignore
+      this.ruleItem("Cookies").isCur(false).tags(["manage all cookies"]);
     }
   }
 
@@ -200,17 +150,6 @@ class ViewArea implements ViewAreaProps, GlobalData {
       {
         div();
         {
-          SlidingDataLabel()
-            .size(12)
-            .style("semibold")
-            .class("gap-2")
-            .bgColor("bg-gray-300/60 dark:bg-[var(--dark-bg-gray-b)]")
-            .slidingPaddingX(4)
-            .allowChoose(true)
-            .callback((tab: string) => {
-              this.activeTool = tab;
-            })
-            .tabs(Object.values(this.state));
         }
         div();
         {
@@ -219,17 +158,6 @@ class ViewArea implements ViewAreaProps, GlobalData {
             Icon.Sliders();
           }
         }
-      }
-      switch (this.activeTool) {
-        case "Edit":
-          this.whenShow();
-          break;
-        case "Delete":
-          this.whenDelete();
-          break;
-        // case "Edit":
-        //   this.whenEdit();
-        //   break;
       }
     }
   }
@@ -242,4 +170,4 @@ class ViewArea implements ViewAreaProps, GlobalData {
     }
   }
 }
-export default ViewArea as Pretty as Typed<ViewAreaProps>;
+export default RuleArea as Pretty as Typed<RuleAreaProps>;

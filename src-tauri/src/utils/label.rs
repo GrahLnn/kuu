@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::database::db;
 use serde::{Deserialize, Serialize};
 use surrealdb::Result;
@@ -25,4 +27,25 @@ pub async fn fetch_labels() -> Result<Vec<LabelRecord>> {
     let mut labels: Vec<LabelRecord> = db::select("label").await?;
     labels.sort_by(|a, b| b.time.cmp(&a.time));
     Ok(labels)
+}
+
+pub async fn get_existence_labels() -> Result<HashSet<String>> {
+    let labels: Vec<LabelRecord> = db::select("label").await?;
+    let labels: HashSet<String> = labels.into_iter().map(|label| label.title).collect();
+    Ok(labels)
+}
+
+pub async fn just_create_label(labels: Vec<LabelRecord>) -> Result<()> {
+    for label in labels {
+        let _: Vec<LabelRecord> = db::create("label", label).await?;
+    }
+    Ok(())
+}
+
+pub fn label_info(title: String, is_assignable: bool) -> LabelRecord {
+    LabelRecord {
+        title,
+        is_assignable,
+        time: chrono::Utc::now().timestamp_millis(),
+    }
 }

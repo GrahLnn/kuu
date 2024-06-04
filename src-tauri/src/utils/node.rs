@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::database::db;
 use anyhow::{bail, Result};
 use serde::{Deserialize, Serialize};
@@ -24,6 +26,11 @@ pub async fn create_node_record(node: NodeRecord) -> SurrealResult<()> {
     if check.unwrap() {
         let _: Vec<NodeRecord> = db::create("node", node).await?;
     }
+    Ok(())
+}
+
+pub async fn create_node_record_no_check(node: NodeRecord) -> SurrealResult<()> {
+    let _: Vec<NodeRecord> = db::create("node", node).await?;
     Ok(())
 }
 
@@ -99,4 +106,10 @@ pub async fn update_node_title(old_title: String, new_title: String) -> Result<(
     ]);
     db::execute(sql, params).await;
     Ok(())
+}
+
+pub async fn get_existence_nodes() -> SurrealResult<HashSet<String>> {
+    let nodes: Vec<NodeRecord> = db::select("node").await?;
+    let titles: HashSet<String> = nodes.iter().map(|node| node.title.clone()).collect();
+    Ok(titles)
 }
