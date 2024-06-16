@@ -89,4 +89,6 @@ export interface GlobalData {
   const?: Record<string, any>;
   notification?: string;
   setNotification?: (notification: string) => void;
+  recordCount?: number;
+  setRecordCount?: (count: number) => void;
 }

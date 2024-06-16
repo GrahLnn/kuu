@@ -68,7 +68,7 @@ import ImgShow from "../../component/present/img_show.view";
 import * as _ from "lodash";
 import { isIgnored } from "../data/utils";
 
-interface ImportAreaProps {}
+interface ImportAreaProps { }
 
 @View
 class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
@@ -96,12 +96,12 @@ class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
   async addLabelAndUpdateLabels(t: string): Promise<void> {
     const labels = this.labels!.map((item) => item.title);
     if (!labels.includes(t)) {
-      await addLabelAndLinkNode(t, this.curNode!.title);
+      await addLabelAndLinkNode(t, this.curNode!);
       fetchLabels().then((labels) => {
         this.setLabels!(labels);
       });
     } else {
-      await addLabelAndLinkNode(t, this.curNode!.title);
+      await addLabelAndLinkNode(t, this.curNode!);
     }
     this.curNode = await fetchNodeByHash(this.curFile!.hash);
   }
@@ -140,32 +140,32 @@ class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
     this.setLabels!(labels);
   }
 
-  async processFiles(concurrentFiles: any) {
-    const importPromises = concurrentFiles.map(async (file: any) => {
-      let resFile;
-      if (!file.exist) {
-        const { exist, ...rest } = file;
-        await justImportFile(rest);
-        resFile = {
-          ...rest,
-          confirm: true,
-          time: getFormattedCurrentTime(),
-        };
-      } else {
-        console.log(file.exist);
-        const { exist, ...rest } = file;
-        resFile = {
-          ...rest,
-          confirm: false,
-          time: getFormattedCurrentTime(),
-        };
-      }
-      this.unshiftToNow!(resFile!);
-      this.allImportHistory.unshift(resFile!);
-    });
+  // async processFiles(concurrentFiles: any) {
+  //   const importPromises = concurrentFiles.map(async (file: any) => {
+  //     let resFile;
+  //     if (!file.exist) {
+  //       const { exist, ...rest } = file;
+  //       await justImportFile(rest);
+  //       resFile = {
+  //         ...rest,
+  //         confirm: true,
+  //         time: getFormattedCurrentTime(),
+  //       };
+  //     } else {
+  //       console.log(file.exist);
+  //       const { exist, ...rest } = file;
+  //       resFile = {
+  //         ...rest,
+  //         confirm: false,
+  //         time: getFormattedCurrentTime(),
+  //       };
+  //     }
+  //     this.unshiftToNow!(resFile!);
+  //     this.allImportHistory.unshift(resFile!);
+  //   });
 
-    await Promise.all(importPromises);
-  }
+  //   await Promise.all(importPromises);
+  // }
 
   async handleFolderUpload() {
     const folderPath = await open({
@@ -198,16 +198,17 @@ class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
     // }
     // this.curFile = resFile;
     let res = await genFileFromFolder(folderPath);
-    // let newFiles = res[0];
-    // for (const file of newFiles) {
-    //   const resFile = {
-    //     ...file,
-    //     confirm: true,
-    //     time: getFormattedCurrentTime(),
-    //   };
-    //   this.unshiftToNow!(resFile!);
-    //   this.allImportHistory.unshift(resFile!);
-    // }
+    console.log(res);
+    let newFiles = res[0];
+    for (const file of newFiles) {
+      const resFile = {
+        ...file,
+        confirm: true,
+        time: getFormattedCurrentTime(),
+      };
+      this.unshiftToNow!(resFile!);
+      this.allImportHistory.unshift(resFile!);
+    }
 
     // console.log(res);
     // let exist = res[1].map((file) => ({
@@ -268,6 +269,7 @@ class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
       .toggleOn(isCur)
       .indicator(isCur ? Icon.ArrowRight : null)
       .onClick(onClick)
+      .fontSize(14)
       .mainClass("cursor-default");
   }
 
@@ -320,7 +322,7 @@ class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
   }
 
   @Snippet
-  webWindow() {}
+  webWindow() { }
 
   @Snippet
   history() {
@@ -409,7 +411,7 @@ class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
           ToggleLabel(label.title)
             .toggle(this.curNode!.labels.includes(label.title))
             .onToggle(() => {
-              linkNodeToLabelReturnNew(this.curNode!.title, label.title).then(
+              linkNodeToLabelReturnNew(this.curNode!, label).then(
                 (node) => {
                   this.curNode = node;
                 }

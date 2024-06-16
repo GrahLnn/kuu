@@ -120,7 +120,7 @@ class PresentRecordsArea
           for (const node of this.nodes!) {
             ItemBar(node.title)
               .dataTags(node.labels)
-              .identifiIcon(Icon.FileContent)
+              .identifiIcon(Icon.Nodes)
               .onClick(() => {
                 this.setNodeModalOpen?.(true);
                 this.choosedNode = node;

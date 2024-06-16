@@ -70,7 +70,7 @@ import SlidingDataLabel from "../../component/label/sliding_data_label.view";
 import DeletableLabel from "../../component/label/deletable_label.view";
 import EditableLabel from "../../component/label/editable_label.view";
 
-interface RuleAreaProps {}
+interface RuleAreaProps { }
 
 @View
 class RuleArea implements RuleAreaProps, GlobalData {
@@ -116,6 +116,7 @@ class RuleArea implements RuleAreaProps, GlobalData {
       .toggleOn(isCur)
       .indicator(isCur ? Icon.ArrowRight : null)
       .onClick(onClick)
+      .fontSize(14)
       .mainClass("cursor-default");
   }
 

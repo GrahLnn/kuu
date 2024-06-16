@@ -194,7 +194,7 @@ class App {
   };
 
   const: Record<string, any> = { defaultFilterName: "My Records" };
-  notification: string = "";
+  notification: string = "This is a highly experimental demo. Do not use it in production.";
   setNotification = (notification: string) => {
     this.notification = notification;
   };
@@ -212,6 +212,7 @@ class App {
     //   this.importHistory = updatedHistory;
     // }, 1000);
   }
+
   willUnmount() {
     if (this.timer) {
       clearInterval(this.timer);
@@ -227,8 +228,8 @@ class App {
     }
     const labels = await fetchLabels();
     this.setLabels(labels);
-    this.notification =
-      "This is a highly experimental demo. Do not use it in production.";
+    // this.notification =
+    //   "This is a highly experimental demo. Do not use it in production.";
     const isWindows = navigator.userAgent.indexOf("Windows") !== -1;
 
     if (isWindows) {

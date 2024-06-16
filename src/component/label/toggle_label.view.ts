@@ -22,8 +22,8 @@ interface ToggleLabelProp {
 @View
 class ToggleLabel implements ToggleLabelProp {
   @Content content: ContentProp<string> = required;
-  @Prop onToggle = () => {};
-  @Prop disToggle = () => {};
+  @Prop onToggle = () => { };
+  @Prop disToggle = () => { };
   @Prop toggle: boolean = false;
 
   ui_border = this.toggle
@@ -34,7 +34,7 @@ class ToggleLabel implements ToggleLabelProp {
     : "bg-[var(--light-bg-tertiary)] dark:bg-[var(--dark-bg-gray-a)]";
   ux = this.toggle
     ? "transition-all dark:opacity-90"
-    : "transition-all opacity-60 hover:opacity-90";
+    : "transition-all opacity-80 hover:opacity-100";
   position = this.toggle
     ? "flex items-center px-1 py-0.5"
     : "flex items-center px-1 py-0.5";

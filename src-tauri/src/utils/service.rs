@@ -1,14 +1,19 @@
-use std::collections::HashSet;
-use std::path::Path;
-
+use super::common;
+use super::label::LabelRecord;
+use super::node::NodeRecord;
 use crate::database::db;
 use crate::utils::file;
 use crate::utils::file::FileRecord;
 use crate::utils::graph;
 use crate::utils::label;
 use crate::utils::node;
+use futures::stream::{FuturesUnordered, StreamExt};
+use indicatif::{ProgressBar, ProgressStyle};
+use std::collections::HashSet;
+use std::path::Path;
 use surrealdb;
 use surrealdb::Result as SurrealResult;
+use tokio::task;
 
 pub async fn create_import(
     mut file: FileRecord,
@@ -23,9 +28,9 @@ pub async fn create_import(
     let self_labels = file.fix_labels.clone();
     labels.retain(|label| !self_labels.contains(label));
     file.labels.extend(labels.clone());
-    let file_record: Vec<FileRecord> = db::create("file", file.clone()).await?;
-    let record = file_record.get(0).unwrap();
-    let node_title = record.stem.clone();
+    let _: Option<FileRecord> = db::create_with_init_id("file", &file.hash, file.clone()).await?;
+
+    let node_title = file.stem.clone();
 
     let node = node::gen_node(node_title.clone());
     let _ = node::create_node_record(node.clone()).await;
@@ -35,9 +40,10 @@ pub async fn create_import(
             title: title.clone(),
             is_assignable: true,
             time: chrono::Utc::now().timestamp_millis(),
+            hash: common::generate_random_string(32),
         };
-        let _ = label::create_label_record(label).await;
-        graph::link_node_to_label(node_title.clone(), title).await;
+        let _ = label::create_label_record(label.clone()).await;
+        graph::link_node_to_label(node.clone(), vec![label]).await;
     }
 
     for title in self_labels {
@@ -45,12 +51,13 @@ pub async fn create_import(
             title: title.clone(),
             is_assignable: false,
             time: chrono::Utc::now().timestamp_millis(),
+            hash: common::generate_random_string(32),
         };
-        let _ = label::create_label_record(label).await;
-        graph::link_node_to_label(node_title.clone(), title).await;
+        let _ = label::create_label_record(label.clone()).await;
+        graph::link_node_to_label(node.clone(), vec![label]).await;
     }
 
-    graph::link_node_to_file(node_title.clone(), record.hash.clone()).await;
+    graph::link_node_to_file(node.clone(), file.clone()).await;
     let node = node::fetch_node(node_title).await?;
 
     Ok((file, Some(node)))
@@ -67,17 +74,14 @@ pub async fn gen_file_record(path: &Path) -> Result<FileRecord, String> {
     Ok(f)
 }
 
-pub async fn link_new_file(
-    file: FileRecord,
-    node_title: String,
-) -> Result<node::NodeRecord, String> {
+pub async fn link_new_file(file: FileRecord, node: NodeRecord) -> Result<node::NodeRecord, String> {
     let check = file::check_file_existence(&file.hash)
         .await
         .map_err(|e| e.to_string())?;
     if !check {
         return Err("File already exists".to_string());
     }
-    let _: Vec<FileRecord> = db::create("file", file.clone())
+    let _: Option<FileRecord> = db::create_with_init_id("file", &file.hash, file.clone())
         .await
         .map_err(|e| e.to_string())?;
     for title in file.labels.clone() {
@@ -85,11 +89,12 @@ pub async fn link_new_file(
             title: title.clone(),
             is_assignable: true,
             time: chrono::Utc::now().timestamp_millis(),
+            hash: common::generate_random_string(32),
         };
         let _ = label::create_label_record(label).await;
     }
-    graph::link_node_to_file(node_title.clone(), file.hash.clone()).await;
-    let node = node::fetch_node(node_title)
+    graph::link_node_to_file(node.clone(), file.clone()).await;
+    let node = node::fetch_node(node.title)
         .await
         .map_err(|e| e.to_string())?;
     Ok(node)
@@ -140,49 +145,70 @@ pub async fn delete_label(label: String) -> Result<(), String> {
 
 pub async fn gen_file_from_folder(str_path: String) -> Result<Vec<FileRecord>, String> {
     let path = Path::new(&str_path);
+
     let files =
         file::fetch_folder_files(path.to_path_buf(), Vec::new()).map_err(|e| e.to_string())?;
+
     let mut hashs = HashSet::new();
     let mut file_records = Vec::new();
-    for file in files {
-        let path = Path::new(&file.path);
-        let mut f = gen_file_record(path).await?;
-        f.labels = file
-            .folders
-            .clone()
-            .into_iter()
-            .filter(|l| !f.fix_labels.contains(l))
-            .collect();
-        if hashs.insert(f.hash.clone()) {
-            file_records.push(f);
+
+    let mut tasks: FuturesUnordered<_> = files
+        .into_iter()
+        .map(|file| {
+            let file_path = file.path.clone();
+            let folders = file.folders.clone();
+            task::spawn(async move {
+                let path = Path::new(&file_path);
+                let mut f = gen_file_record(path).await?;
+                f.labels = folders
+                    .into_iter()
+                    .filter(|l| !f.fix_labels.contains(l))
+                    .collect();
+                Ok::<_, String>((f.hash.clone(), f))
+            })
+        })
+        .collect();
+
+    while let Some(result) = tasks.next().await {
+        match result {
+            Ok(Ok((hash, file_record))) => {
+                if hashs.insert(hash) {
+                    file_records.push(file_record);
+                }
+            }
+            Ok(Err(e)) => return Err(e),
+            Err(e) => return Err(e.to_string()),
         }
     }
+
     Ok(file_records)
 }
 
-pub async fn import_file_with_node(file: FileRecord) -> Result<(), String> {
-    dbg!(&file);
-    let _: Vec<FileRecord> = db::create("file", file.clone())
+pub async fn import_file_with_node(
+    file: FileRecord,
+    node: NodeRecord,
+    labels: Vec<LabelRecord>,
+) -> Result<(), String> {
+    let _: Option<FileRecord> = db::create_with_init_id("file", &file.hash, file.clone())
         .await
         .map_err(|e| e.to_string())?;
+    graph::link_node_to_label(node.clone(), labels).await;
+    graph::link_node_to_file(node.clone(), file).await;
 
-    let mut all_labels = file.fix_labels;
-    all_labels.extend(file.labels);
-    for l in all_labels {
-        graph::link_node_to_label(file.stem.clone(), l).await;
-    }
-    graph::link_node_to_file(file.stem.clone(), file.hash.clone()).await;
     Ok(())
 }
 
-pub async fn check_and_gen_node(files: Vec<FileRecord>) -> Result<(), String> {
+pub async fn check_and_gen_node(files: Vec<FileRecord>) -> Result<Vec<NodeRecord>, String> {
     let nodes = node::get_existence_nodes()
         .await
         .map_err(|e| e.to_string())?;
     let stem_set: HashSet<String> = files.iter().map(|f| f.stem.clone()).collect();
     let need_create = stem_set.difference(&nodes).collect::<Vec<&String>>();
+    let mut nodes = Vec::new();
     for stem in need_create {
-        let _ = node::create_node_record_no_check(node::gen_node(stem.clone())).await;
+        let node = node::gen_node(stem.clone());
+        let _ = node::create_node_record_no_check(node.clone()).await;
+        nodes.push(node);
     }
-    Ok(())
+    Ok(nodes)
 }

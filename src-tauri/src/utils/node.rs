@@ -5,11 +5,14 @@ use anyhow::{bail, Result};
 use serde::{Deserialize, Serialize};
 use surrealdb::Result as SurrealResult;
 
+use super::common;
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct NodeRecord {
     pub title: String,
     pub labels: Vec<String>,
     pub linked_files: Vec<String>,
+    pub hash: String,
 }
 
 // pub async fn create_node_record(node: NodeRecord) -> SurrealResult<()> {
@@ -21,16 +24,17 @@ pub struct NodeRecord {
 pub async fn create_node_record(node: NodeRecord) -> SurrealResult<()> {
     let sql = "(SELECT * FROM node WHERE title = $title) = []";
     let params = Some(vec![("title", node.title.as_str())]);
-    let mut res = db::query(sql, params).await?;
+    let mut res = db::query(sql, params, None::<Vec<(&str, Vec<String>)>>).await?;
     let check: Option<bool> = res.take(0)?;
     if check.unwrap() {
-        let _: Vec<NodeRecord> = db::create("node", node).await?;
+        let _: Option<NodeRecord> =
+            db::create_with_init_id("node", &node.clone().title, node).await?;
     }
     Ok(())
 }
 
 pub async fn create_node_record_no_check(node: NodeRecord) -> SurrealResult<()> {
-    let _: Vec<NodeRecord> = db::create("node", node).await?;
+    let _: Option<NodeRecord> = db::create_with_init_id("node", &node.clone().hash, node).await?;
     Ok(())
 }
 
@@ -39,6 +43,7 @@ pub fn gen_node(title: String) -> NodeRecord {
         title,
         labels: vec![],
         linked_files: vec![],
+        hash: common::generate_random_string(32),
     }
 }
 
@@ -47,7 +52,7 @@ pub async fn fetch_node(title: String) -> SurrealResult<NodeRecord> {
         SELECT * FROM ONLY node WHERE title = $title LIMIT 1;
         "#;
     let params = Some(vec![("title", title.as_str())]);
-    let mut res = db::query(sql, params).await?;
+    let mut res = db::query(sql, params, None::<Vec<(&str, Vec<String>)>>).await?;
     let node: Option<NodeRecord> = res.take(0)?;
     Ok(node.unwrap())
 }
@@ -64,7 +69,7 @@ pub async fn fetch_node_by_hash(hash: String) -> SurrealResult<NodeRecord> {
         SELECT * FROM ONLY $node LIMIT 1;
         "#;
     let params = Some(vec![("hash", hash.as_str())]);
-    let mut res = db::query(sql, params).await?;
+    let mut res = db::query(sql, params, None::<Vec<(&str, Vec<String>)>>).await?;
     let node: Option<NodeRecord> = res.take(2)?;
     Ok(node.unwrap())
 }
@@ -77,7 +82,7 @@ pub async fn fetch_nodes_by_labels(labels: Vec<String>) -> SurrealResult<Vec<Nod
         "#;
     // let labels_str = format!("{:?}", labels);
     let params = Some(vec![("labels", labels)]);
-    let mut res = db::query(sql, params).await?;
+    let mut res = db::query(sql, params, None::<Vec<(&str, Vec<String>)>>).await?;
     let nodes: Vec<NodeRecord> = res.take(2)?;
     dbg!(&nodes);
     Ok(nodes)
@@ -89,7 +94,7 @@ pub async fn update_node_title(old_title: String, new_title: String) -> Result<(
         RETURN $node == [];
         "#;
     let params = Some(vec![("new_title", new_title.as_str())]);
-    let mut res = db::query(sql, params).await?;
+    let mut res = db::query(sql, params, None::<Vec<(&str, Vec<String>)>>).await?;
     dbg!(&res);
     let check: Option<bool> = res.take(1)?;
     if check == Some(false) {

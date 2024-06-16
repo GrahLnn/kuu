@@ -50,8 +50,8 @@ class TabRouteButton implements TabRouteButtonProp, FilterEnv {
       ? "transition opacity-95 group"
       : "transition opacity-80 hover:opacity-90 group";
     this.position = this.toggle
-      ? "flex items-center px-4 py-2 w-full justify-between gap-1"
-      : "flex items-center px-4 py-2 w-full justify-between gap-1";
+      ? "flex items-center pl-4 pr-2 py-2 w-full justify-between gap-1"
+      : "flex items-center pl-4 pr-2 py-2 w-full justify-between gap-1";
   }
   Body() {
     div()

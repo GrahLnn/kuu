@@ -29,14 +29,11 @@ class DemoWarning implements DemoWarningProp, GlobalData {
       clearTimeout(this.timmer);
     }
 
-    if (this.notification !== "") {
+    if (this.notification && this.notification !== "") {
       this.transform = "transform-in-y";
       this.timmer = setTimeout(async () => {
         this.transform = "transform-out-y";
-        // const anime = document.getAnimations();
-        // console.log(anime);
-        // await Promise.all(anime.map((a) => a.finished));
-        // console.log("done");
+        
         setTimeout(() => {
           this.setNotification?.("");
         }, 200);

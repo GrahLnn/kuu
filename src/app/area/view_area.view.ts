@@ -70,7 +70,7 @@ import SlidingDataLabel from "../../component/label/sliding_data_label.view";
 import DeletableLabel from "../../component/label/deletable_label.view";
 import EditableLabel from "../../component/label/editable_label.view";
 
-interface ViewAreaProps {}
+interface ViewAreaProps { }
 
 interface ToolState {
   [key: string]: string;
@@ -118,6 +118,7 @@ class ViewArea implements ViewAreaProps, GlobalData {
       .toggleOn(isCur)
       .indicator(isCur ? Icon.ArrowRight : null)
       .onClick(onClick)
+      .fontSize(14)
       .mainClass("cursor-default");
   }
 
@@ -142,7 +143,7 @@ class ViewArea implements ViewAreaProps, GlobalData {
 
   @Snippet
   whenShow() {
-    div().class("flex gap-1.5 flex-wrap px-4 py-2");
+    div().class("flex gap-1.5 flex-wrap px-4 py-2 overflow-y-auto");
     {
       FnDashEditableLabel("Add trait")
         .leftIcon(Icon.Plus)
@@ -162,7 +163,7 @@ class ViewArea implements ViewAreaProps, GlobalData {
         (l) => l !== null
       ).length > 0
     ) {
-      div().class("flex gap-1.5 flex-wrap px-4 py-2");
+      div().class("flex gap-1.5 flex-wrap px-4 py-2 overflow-y-auto");
       {
         for (const label of this.labels!) {
           if (label.is_assignable) {

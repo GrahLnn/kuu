@@ -40,8 +40,8 @@ export async function fetchImgBase64(path: string): Promise<string> {
   return await invoke("fetch_img_base64", { path });
 }
 
-export async function addLabelAndLinkNode(title: string, nodeTitle: string) {
-  await invoke("add_label_and_link_node", { title, nodeTitle });
+export async function addLabelAndLinkNode(title: string, node: NodeRecord) {
+  await invoke("add_label_and_link_node", { title, node });
 }
 
 export async function deleteNodeLabelLink(
@@ -55,12 +55,12 @@ export async function deleteNodeLabelLink(
 }
 
 export async function linkNodeToLabelReturnNew(
-  nodeTitle: string,
-  labelTitle: string
+  node: NodeRecord,
+  label: LabelRecord
 ): Promise<NodeRecord> {
   return await invoke("link_node_to_label_return_new", {
-    nodeTitle,
-    labelTitle,
+    node,
+    label,
   });
 }
 
@@ -88,9 +88,9 @@ export async function deleteFile(path: string) {
 
 export async function linkNewFile(
   path: string,
-  title: string
+  node: NodeRecord
 ): Promise<NodeRecord> {
-  return await invoke("link_new_file", { path, title });
+  return await invoke("link_new_file", { path, node });
 }
 
 export async function addNewLabel(title: string) {
@@ -113,6 +113,6 @@ export async function genFileFromFolder(
   });
 }
 
-export async function justImportFile(file: FileRecord) {
-  await invoke("just_import_file", { file });
+export async function justImportFile(file: FileRecord, node: NodeRecord, labels: LabelRecord[]) {
+  await invoke("just_import_file", { file, node, labels });
 }

@@ -70,7 +70,7 @@ import SlidingDataLabel from "../../component/label/sliding_data_label.view";
 import DeletableLabel from "../../component/label/deletable_label.view";
 import EditableLabel from "../../component/label/editable_label.view";
 
-interface ToolAreaProps {}
+interface ToolAreaProps { }
 
 interface ToolState {
   [key: string]: string;
@@ -104,12 +104,35 @@ class ToolArea implements ToolAreaProps, GlobalData {
   }
 
   @Snippet
+  toolItem({
+    content,
+    isCur,
+    tags,
+    onClick,
+  }: {
+    content: string;
+    isCur: boolean;
+    tags: string[];
+    onClick: () => void;
+  }) {
+    ItemBar(content)
+      .dataTags(tags)
+      .toggleOn(isCur)
+      .indicator(isCur ? Icon.ArrowRight : null)
+      .onClick(onClick)
+      .fontSize(14)
+      .mainClass("cursor-default");
+  }
+
+  @Snippet
   leftPart() {
     div().class(
       "w-[296px] grow-0 shrink-0 bg-gray-100 dark:bg-[var(--dark-bg-blue-primary)] flex flex-col border-r border-[#edf0f3] dark:border-[#212234] py-[1px]"
     );
     {
       this.leftToolBar();
+      // @ts-ignore
+      this.toolItem(".collect()").isCur(true).tags(["package your choosen files"]);
     }
   }
 
@@ -123,9 +146,7 @@ class ToolArea implements ToolAreaProps, GlobalData {
         "flex py-2 px-4 justify-between items-center border-b border-[#edf0f3] dark:border-[#212234] bg-gray-100 dark:bg-[var(--dark-bg-blue-primary)]"
       );
       {
-        div();
-        {
-        }
+
         div();
         {
           TypedButton("Display");

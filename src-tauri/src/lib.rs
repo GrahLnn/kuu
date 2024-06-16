@@ -10,6 +10,9 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::new().build())
         .setup(|app| {
+            let main_window = app.get_webview_window("main").unwrap();
+            main_window.eval("setTimeout(() => window.location.reload(), 50)").unwrap();
+
             let app_handle = app.handle().clone();
             tokio::spawn(async move {
                 match app_handle.path().app_data_dir() {
@@ -21,11 +24,11 @@ pub fn run() {
                         let _temp_dir = dirs::app_temp_dir(dir.clone());
                         let _resource_dir = dirs::app_resource_dir(dir.clone());
                         let _backup_dir = dirs::app_backup_dir(dir.clone());
-                        dbg!(db_dir.clone());
-                        if let Err(e) = database::db::init(db_dir).await {
+                        if let Err(e) = database::db::init(db_dir.clone()).await {
                             println!("Failed to initialize database: {}", e);
                         }
-                        database::db::check().await.unwrap();
+                        dbg!(db_dir);
+                        // database::db::check().await.unwrap();
                     }
                     Err(e) => {
                         println!("Failed to get app data dir: {}", e);

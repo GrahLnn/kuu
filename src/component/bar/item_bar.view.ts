@@ -24,6 +24,7 @@ interface ItemBarProp {
   indicator?: any | null;
   onClick?: () => void;
   mainClass?: string;
+  fontSize?: number;
 }
 
 @View
@@ -37,6 +38,7 @@ class ItemBar implements ItemBarProp {
   @Prop indicator?: any | null;
   @Prop onClick?: () => void;
   @Prop mainClass?: string | "";
+  @Prop fontSize?: number = 12;
 
   ui = "";
   ui_border = "border-b border-[#edf0f3] dark:border-[#212234]";
@@ -74,7 +76,7 @@ class ItemBar implements ItemBarProp {
       div().class("-mb-1 mx-2 grow");
       {
         div(this.content).class(
-          "text-[12px] text-[#2e2e2e] dark:text-[#fefefe] opacity-90 ml-0.5 cursor-default text-wrap long-string"
+          `text-[${this.fontSize}px] text-[#2e2e2e] dark:text-[#fefefe] opacity-90 ml-0.5 cursor-default text-wrap long-string`
         );
 
         SlidingDataLabel().tabs(this.dataTags).class("-mt-1");

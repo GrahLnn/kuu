@@ -55,6 +55,10 @@ interface NodeBoxProp {
   show: boolean;
   onClose: () => void;
   node: NodeRecord;
+  files: FileRecord[];
+  commonPathLast: string | null;
+  commonPathRest: string | null;
+  commonPath: string | null;
 }
 
 @View
@@ -77,19 +81,18 @@ class NodeBox implements NodeBoxProp, MenuEnv, GlobalData, FilterEnv {
   @Env labels?: LabelRecord[] | undefined;
 
   onToggleLabels: string[] = [];
-  files: FileRecord[] = [];
+  @Prop files: FileRecord[] = [];
 
   // bg-[#e0e2e5] dark:bg-[#191e33]
   // bg-white dark:bg-[#191e33] dark:bg-opacity-50 bg-opacity-50
   bg_a = "bg-[#e0e2e5] dark:bg-[#191e33]";
   bd_a = "border dark:border-[#38394c] border-[#d8d8d8] rounded-lg";
-  ux_a = `shadow-xl transition-all duration-300 ${
-    this.show ? "scale-100 " : "scale-75"
-  }`;
+  ux_a = `shadow-xl transition-all duration-300 ${this.show ? "scale-100 " : "scale-75"
+    }`;
   po_a = "relative grow-0 sm:w-full sm:max-w-3xl h-full";
-  commonPathLast: string | null = null;
-  commonPathRest: string | null = null;
-  commonPath: string | null = null;
+  @Prop commonPathLast: string | null = null;
+  @Prop commonPathRest: string | null = null;
+  @Prop commonPath: string | null = null;
   curMenuFile: string | null = null;
   assignableLabels: LabelRecord[] = this.labels!.filter(
     (label) => label.is_assignable
@@ -113,12 +116,14 @@ class NodeBox implements NodeBoxProp, MenuEnv, GlobalData, FilterEnv {
     }
   };
 
-  updateFile(files: string[]) {
+  async updateFile(files: string[]) {
     this.files = [];
     for (const path of files) {
-      fetchFile(path).then((file) => {
-        this.files.push(file);
-      });
+      // fetchFile(path).then((file) => {
+      //   this.files.push(file);
+      // });
+      let file = await fetchFile(path);
+      this.files.push(file);
     }
     if (this.node.linked_files.length > 1) {
       this.commonPath = this.getCommonPath(this.node.linked_files);
@@ -127,12 +132,16 @@ class NodeBox implements NodeBoxProp, MenuEnv, GlobalData, FilterEnv {
     }
   }
 
-  willMount() {
-    this.updateFile(this.node.linked_files);
+  async willMount() {
+    await this.updateFile(this.node.linked_files);
     if (this.timmer) {
       clearTimeout(this.timmer);
     }
   }
+
+  
+
+  
 
   invalidTitle(token: string) {
     if (this.timmer) {
@@ -157,7 +166,9 @@ class NodeBox implements NodeBoxProp, MenuEnv, GlobalData, FilterEnv {
         break;
       }
     }
-
+    if (commonPathParts.length === 0) {
+      return "";
+    }
     return commonPathParts.join("/") + "/";
   }
 
@@ -185,13 +196,13 @@ class NodeBox implements NodeBoxProp, MenuEnv, GlobalData, FilterEnv {
   async addLabelAndUpdateLabels(t: string): Promise<void> {
     const labels = this.labels!.map((item) => item.title);
     if (!labels.includes(t)) {
-      await addLabelAndLinkNode(t, this.node.title);
+      await addLabelAndLinkNode(t, this.node);
       fetchLabels().then((labels) => {
         this.setLabels!(labels);
       });
     } else {
       // await updateNodeLabels
-      await addLabelAndLinkNode(t, this.node.title);
+      await addLabelAndLinkNode(t, this.node);
     }
     // this.curNode = await fetchNodeByHash(this.curFile!.hash);
     let nodes: NodeRecord[] = await this.updateNodes();
@@ -222,6 +233,7 @@ class NodeBox implements NodeBoxProp, MenuEnv, GlobalData, FilterEnv {
         this.curMenuFile = null;
       },
       delete: async () => {
+        console.log("delete file")
         await deleteFile((this.commonPath || "") + f);
         let nodes: NodeRecord[] = await this.updateNodes();
         this.setNodes?.(nodes);
@@ -231,11 +243,11 @@ class NodeBox implements NodeBoxProp, MenuEnv, GlobalData, FilterEnv {
           );
           this.onClose();
         } else {
-          nodes.map((i) => {
+          nodes.map(async (i) => {
             if (_.isEqual(i.title, this.node.title)) {
               this.node = i;
               console.log(i);
-              this.updateFile(i.linked_files);
+              await this.updateFile(i.linked_files);
             }
           });
         }
@@ -260,11 +272,11 @@ class NodeBox implements NodeBoxProp, MenuEnv, GlobalData, FilterEnv {
     if (!files) return;
     for (let file of files) {
       try {
-        let node = await linkNewFile(file.path, this.node.title);
+        let node = await linkNewFile(file.path, this.node);
         let nodes = await this.updateNodes();
         this.setNodes?.(nodes);
         this.node = node;
-        this.updateFile(node.linked_files);
+        await this.updateFile(node.linked_files);
       } catch (err: any) {
         this.setNotification?.(String(err));
       }
@@ -406,8 +418,8 @@ class NodeBox implements NodeBoxProp, MenuEnv, GlobalData, FilterEnv {
                     .toggle(this.node!.labels.includes(label.title))
                     .onToggle(() => {
                       linkNodeToLabelReturnNew(
-                        this.node!.title,
-                        label.title
+                        this.node!,
+                        label
                       ).then(async (node) => {
                         this.node = node;
                         const nodes = await this.updateNodes();
@@ -435,7 +447,7 @@ class NodeBox implements NodeBoxProp, MenuEnv, GlobalData, FilterEnv {
                 "text-[13px] py-1 text-[#5c5c5e] dark:text-[#969799] cursor-default"
               );
             }
-            div().class("col-span-11 flex flex-col gap-1");
+            div().class("col-span-11 flex flex-col gap-1 pr-2");
             {
               if (this.commonPath) {
                 div(this.commonPath).class(
@@ -477,8 +489,8 @@ class NodeBox implements NodeBoxProp, MenuEnv, GlobalData, FilterEnv {
                 div()
                   .class(
                     this.menu === Menu.LinkAdd
-                      ? "flex items-center justify-center w-[27px] opacity-100 bg-zinc-300 dark:bg-[#2a3146] rounded-md"
-                      : "flex items-center justify-center w-[27px] opacity-60 hover:opacity-100 hover:bg-zinc-300 dark:hover:bg-[#2a3146] rounded-md transition duration-300"
+                      ? "flex items-center justify-center w-[27px] min-h-[27px] opacity-100 bg-zinc-300 dark:bg-[#2a3146] rounded-md"
+                      : "flex items-center justify-center w-[27px] min-h-[27px] opacity-60 hover:opacity-100 hover:bg-zinc-300 dark:hover:bg-[#2a3146] rounded-md transition duration-300"
                   )
                   .ref((r) => (this.linkAddRef = r))
                   .onClick(() => {
@@ -498,6 +510,7 @@ class NodeBox implements NodeBoxProp, MenuEnv, GlobalData, FilterEnv {
               )
             )
           ) {
+
             if (this.files.length === 1) {
               NoneShow("No preview for this file.");
             } else {
@@ -507,7 +520,7 @@ class NodeBox implements NodeBoxProp, MenuEnv, GlobalData, FilterEnv {
             for (const file of this.files) {
               switch (file.logo) {
                 case FileType.PDF:
-                  PDFViewer(file.path);
+                  // PDFViewer(file.path);
                   break;
                 case FileType.Audio:
                   AudioPlayer(file.path).transparent(false);

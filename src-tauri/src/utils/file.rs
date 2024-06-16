@@ -183,10 +183,22 @@ pub fn fetch_folder_files(path: PathBuf, folders: Vec<String>) -> io::Result<Vec
     Ok(results)
 }
 
+// pub async fn batch_create_file_record(files: Vec<FileRecord>) -> Result<(), String> {
+//     let mut sql_statements: Vec<String> = Vec::new();
+//     for file in files {
+//         let json_content = serde_json::to_string(&file).map_err(|e| e.to_string())?;
+//         let sql = format!("CREATE file CONTENT {}", json_content);
+//         sql_statements.push(sql);
+//     }
+//     let sql = sql_statements.join("; ");
+//     db::execute(&sql, vec![]).await;
+//     Ok(())
+// }
+
 pub async fn fetch_file_by_path(path: String) -> SurrealResult<FileRecord> {
     let sql = "SELECT * FROM ONLY file WHERE path = $path LIMIT 1;";
     let params = Some(vec![("path", path.as_str())]);
-    let mut res = db::query(sql, params).await?;
+    let mut res = db::query(sql, params, None::<Vec<(&str, Vec<String>)>>).await?;
     let file: Option<FileRecord> = res.take(0)?;
     dbg!(&file);
     Ok(file.unwrap())
@@ -202,7 +214,7 @@ pub async fn delete_file(path: String) -> SurrealResult<()> {
 pub async fn check_file_existence(hash: &str) -> SurrealResult<bool> {
     let sql = "(SELECT * FROM file WHERE hash = $hash) == []";
     let params = Some(vec![("hash", hash)]);
-    let mut res = db::query(sql, params).await?;
+    let mut res = db::query(sql, params, None::<Vec<(&str, Vec<String>)>>).await?;
     let check: Option<bool> = res.take(0)?;
     Ok(check.unwrap())
 }

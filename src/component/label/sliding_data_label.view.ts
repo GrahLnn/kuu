@@ -28,7 +28,7 @@ class SlidingDataLabel implements SlidingDataLabelProp {
   @Prop bgColor: string | null = null;
   @Prop slidingPaddingX: number = 0;
   @Prop allowChoose: boolean = false;
-  @Prop callback?: (n: any) => void = () => {};
+  @Prop callback?: (n: any) => void = () => { };
 
   tabsRef: HTMLElement[] = [];
   activeTabKey: number | null = null;
@@ -82,24 +82,20 @@ class SlidingDataLabel implements SlidingDataLabelProp {
         });
       {
         span().class(
-          `h-full w-full rounded-sm transition-colors duration-200 ${
-            this.activeTabKey !== null
+          `h-full w-full rounded-sm transition-colors duration-200 ${this.activeTabKey !== null
+            ? this.bgColor
               ? this.bgColor
-                ? this.bgColor
-                : "bg-gray-300/30 dark:bg-[var(--dark-bg-gray-b)]"
-              : "bg-transparent"
+              : "bg-gray-300/30 dark:bg-[var(--dark-bg-gray-b)]"
+            : "bg-transparent"
           }`
         );
       }
       for (const [idx, tab] of Object.entries(this.tabs)) {
         div(tab)
           .class(
-            `${
-              this.activeTabKey === Number(idx) ? "opacity-70" : "opacity-60"
-            } shrink-0 dark:text-white my-auto select-none rounded-full px-0.5 text-center ${
-              this.style ? `font-${this.style}` : "font-light"
-            } transition-opacity cursor-default ${
-              this.size ? `text-[${this.size}px]` : "text-[8px]"
+            `${this.activeTabKey === Number(idx) ? "opacity-70" : "opacity-60"
+            } shrink-0 dark:text-white my-auto select-none rounded-full px-0.5 text-center ${this.style ? `font-${this.style}` : ""
+            } transition-opacity cursor-default ${this.size ? `text-[${this.size}px]` : "text-[9px]"
             } `
           )
           .onMouseEnter(() => {

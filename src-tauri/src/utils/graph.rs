@@ -1,41 +1,87 @@
 use crate::database::db;
 
-pub async fn link_node_to_file(node_title: String, file_hash: String) -> () {
+use super::{common, file::FileRecord, label::LabelRecord, node::NodeRecord};
+
+pub async fn link_node_to_file(node: NodeRecord, file: FileRecord) -> () {
     let sql = r#"
-        LET $file = (SELECT VALUE id FROM file WHERE hash = $hash);
-        LET $node = (SELECT VALUE id FROM node WHERE title = $title);
-        UPDATE $node SET linked_files += SELECT VALUE path FROM ONLY $file LIMIT 1;
+        LET $file = <record>$hashID;
+        LET $node = <record>$nodeID;
+        UPDATE $node SET linked_files += $path;
         RELATE $node -> linked -> $file;
-        LET $labels = array::union(SELECT VALUE labels FROM ONLY $file LIMIT 1, SELECT VALUE labels FROM ONLY $node LIMIT 1);
+        LET $labels = array::union($file_labels, $node_labels);
         UPDATE $node SET labels = $labels;
         "#;
-    let params = Some(vec![
-        ("hash", file_hash.as_str()),
-        ("title", node_title.as_str()),
+    let file_id = format!("file:{}", file.hash);
+    let node_id = format!("node:{}", node.hash);
+    // let file_labels_json = serde_json::to_string(&file.labels).unwrap();
+    let params1 = Some(vec![
+        ("hashID", file_id.as_str()),
+        ("nodeID", node_id.as_str()),
+        ("path", file.path.as_str()),
     ]);
-    db::execute(sql, params).await;
+    let params2 = Some(vec![
+        ("file_labels", file.labels),
+        ("node_labels", node.labels),
+    ]);
+
+    let _ = db::query(sql, params1, params2).await;
 }
 
-pub async fn link_node_to_label(node_title: String, label_title: String) -> () {
+pub async fn link_node_to_label(node: NodeRecord, labels: Vec<LabelRecord>) -> () {
+    // let sql = r#"
+    //     LET $labels = <array<record>>$labelsID;
+    //     LET $node = <record>$nodeID;
+    //     LET $labeled = (SELECT VALUE ->labeled.out FROM ONLY $node);
+
+    //     DEFINE FUNCTION fn::update_link($nodeID: record, $labelID: record) {
+    //         RELATE $nodeID -> labeled -> $labelID;
+    //         UPDATE $nodeID SET labels += (SELECT VALUE title FROM ONLY $labelID);
+    //     };
+    //     FOR $label IN array::difference($labels, $labeled) {
+    //         fn::update_link($node, $label)
+    //     }
+    // "#;
+    // let node_id = format!("node:{}", node.hash);
+    // let mut labels_id = Vec::new();
+    // for label in labels {
+    //     labels_id.push(format!("label:{}", label.hash));
+    // }
+    // let params = Some(vec![("nodeID", node_id.as_str())]);
+    // let params2 = Some(vec![("labelsID", labels_id)]);
+    // let _ = db::query(sql, params, params2).await;
+
+    let sql = r#"LET $labeled = (SELECT VALUE ->labeled.out FROM ONLY <record>$node);
+    SELECT * FROM $labeled;
+    "#;
+    let node_id = format!("node:{}", node.hash);
+    let params = Some(vec![("node", node_id.as_str())]);
+    let mut res = db::query(sql, params, None::<Vec<(&str, Vec<String>)>>)
+        .await
+        .map_err(|e| e.to_string())
+        .unwrap();
+    let labeled: Vec<LabelRecord> = res.take(1).unwrap();
+    let mut fileter_labels: Vec<LabelRecord> = labels;
+    common::remove_duplicates(&mut fileter_labels, &labeled);
     let sql = r#"
-        LET $label = (SELECT VALUE id FROM ONLY label WHERE title = $label_title LIMIT 1);
-        LET $node = (SELECT VALUE id FROM ONLY node WHERE title = $node_title LIMIT 1);
-        LET $labeled = (SELECT VALUE ->labeled.out FROM ONLY $node LIMIT 1);
+        LET $labels = <array<record>>$labelsID;
+        LET $node = <record>$nodeID;
 
         DEFINE FUNCTION fn::update_link($nodeID: record, $labelID: record) {
             RELATE $nodeID -> labeled -> $labelID;
             UPDATE $nodeID SET labels += (SELECT VALUE title FROM ONLY $labelID);
         };
-
-        IF $label NOTINSIDE $labeled THEN
+        FOR $label IN $labels {
             fn::update_link($node, $label)
-        END;
-        "#;
-    let params = Some(vec![
-        ("label_title", label_title.as_str()),
-        ("node_title", node_title.as_str()),
-    ]);
-    db::execute(sql, params).await;
+        }
+    "#;
+    let node_id = format!("node:{}", node.hash);
+    let mut labels_id = Vec::new();
+    for label in fileter_labels {
+        labels_id.push(format!("label:{}", label.hash));
+    }
+    let params = Some(vec![("nodeID", node_id.as_str())]);
+    let params2 = Some(vec![("labelsID", labels_id)]);
+    let _ = db::query(sql, params, params2).await;
 }
 
 pub async fn delete_node_label_link(node_title: String, label_title: String) -> () {

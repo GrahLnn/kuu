@@ -1,3 +1,4 @@
+use crate::utils::common;
 use crate::utils::file;
 use crate::utils::label;
 use crate::utils::node;
@@ -18,7 +19,20 @@ pub async fn init(db_path: PathBuf) -> Result<()> {
     Ok(())
 }
 
-pub async fn create<T: Serialize, U: DeserializeOwned + Debug>(
+pub async fn create_with_init_id<T: Serialize, U: DeserializeOwned + Debug>(
+    table: &str,
+    id: &str,
+    item: T,
+) -> Result<Option<U>> {
+    let db = DB.get().expect("DB not initialized");
+    let result: Option<U> = db
+        .create((table, common::remove_special_chars(id)))
+        .content(item)
+        .await?;
+    Ok(result)
+}
+
+pub async fn create_with_radom_id<T: Serialize, U: DeserializeOwned + Debug>(
     table: &str,
     item: T,
 ) -> Result<Vec<U>> {
@@ -38,9 +52,14 @@ pub async fn delete(table: &str, id: &str) -> Result<Option<Thing>> {
     db.delete((table, id)).await
 }
 
-pub async fn query<T>(sql: &str, params: Option<Vec<(&str, T)>>) -> Result<Response>
+pub async fn query<T, Y>(
+    sql: &str,
+    params: Option<Vec<(&str, T)>>,
+    params2: Option<Vec<(&str, Y)>>,
+) -> Result<Response>
 where
     T: Serialize,
+    Y: Serialize,
 {
     let db = DB.get().expect("DB not initialized");
     let mut query = db.query(sql);
@@ -49,10 +68,19 @@ where
             query = query.bind((key, value));
         }
     }
+    if let Some(bindings) = params2 {
+        for (key, value) in bindings {
+            query = query.bind((key, value));
+        }
+    }
+
     query.await
 }
 
-pub async fn execute(sql: &str, params: Option<Vec<(&str, &str)>>) -> () {
+pub async fn execute<T>(sql: &str, params: Option<Vec<(&str, T)>>) -> ()
+where
+    T: Serialize,
+{
     let db = DB.get().expect("DB not initialized");
     let mut execute = db.query(sql);
     if let Some(bindings) = params {
