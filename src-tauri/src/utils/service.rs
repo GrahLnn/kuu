@@ -199,16 +199,25 @@ pub async fn import_file_with_node(
 }
 
 pub async fn check_and_gen_node(files: Vec<FileRecord>) -> Result<Vec<NodeRecord>, String> {
-    let nodes = node::get_existence_nodes()
-        .await
-        .map_err(|e| e.to_string())?;
+    let existing_nodes = node::get_exist_nodes().await.map_err(|e| e.to_string())?;
+    let existing_titles: HashSet<String> = existing_nodes
+        .iter()
+        .map(|node| node.title.clone())
+        .collect();
     let stem_set: HashSet<String> = files.iter().map(|f| f.stem.clone()).collect();
-    let need_create = stem_set.difference(&nodes).collect::<Vec<&String>>();
+    let need_create: HashSet<String> = stem_set.difference(&existing_titles).cloned().collect();
     let mut nodes = Vec::new();
-    for stem in need_create {
+    for stem in &need_create {
         let node = node::gen_node(stem.clone());
         let _ = node::create_node_record_no_check(node.clone()).await;
         nodes.push(node);
     }
+    let existing_stems: HashSet<_> = stem_set.difference(&need_create).cloned().collect();
+    for stem in existing_stems {
+        if let Some(node) = existing_nodes.iter().find(|n| n.title == stem) {
+            nodes.push(node.clone());
+        }
+    }
+
     Ok(nodes)
 }

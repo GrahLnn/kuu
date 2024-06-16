@@ -230,11 +230,10 @@ pub async fn delete_label(title: String) -> CmdResult<()> {
 
 #[command]
 pub async fn gen_file_from_folder(path: String) -> CmdResult<(Vec<FileRecord>, Vec<FileRecord>)> {
-    dbg!("Start to import files");
     let files = service::gen_file_from_folder(path).await?;
-    dbg!("Files generated");
+
     let exist_files = file::get_existence_hashs().await?;
-    dbg!("Exist files fetched");
+
     let unique_files: Vec<FileRecord> = files
         .clone()
         .into_iter()
@@ -284,16 +283,15 @@ pub async fn gen_file_from_folder(path: String) -> CmdResult<(Vec<FileRecord>, V
         .into_iter()
         .chain(clean_assinable_labels.into_iter())
         .collect();
-    dbg!("Start to create labels");
 
     label::just_create_label(union_clean_labels.clone())
         .await
         .map_err(|e| e.to_string())?;
     let mut all_labels_vec = union_clean_labels.clone();
     all_labels_vec.extend(exist_label.clone());
+
     let nodes = service::check_and_gen_node(unique_files.clone()).await?;
 
-    dbg!("Start to import files");
     let pb = ProgressBar::new(unique_files.len() as u64);
     pb.set_style(
         ProgressStyle::default_bar()

@@ -113,8 +113,8 @@ pub async fn update_node_title(old_title: String, new_title: String) -> Result<(
     Ok(())
 }
 
-pub async fn get_existence_nodes() -> SurrealResult<HashSet<String>> {
+pub async fn get_exist_nodes() -> SurrealResult<Vec<NodeRecord>> {
     let nodes: Vec<NodeRecord> = db::select("node").await?;
-    let titles: HashSet<String> = nodes.iter().map(|node| node.title.clone()).collect();
-    Ok(titles)
+    
+    Ok(nodes)
 }

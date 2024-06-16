@@ -86,6 +86,8 @@ class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
   assignableLabels: LabelRecord[] = this.labels!.filter(
     (label) => label.is_assignable
   );
+  isFileLoading: boolean = false;
+  isFolderLoading: boolean = false;
 
   willMount() {
     for (const [interval, items] of Object.entries(this.importHistory!)) {
@@ -168,10 +170,15 @@ class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
   // }
 
   async handleFolderUpload() {
+    console.log("handleFolderUpload");
+    this.isFolderLoading = true;
     const folderPath = await open({
       directory: true,
     });
-    if (!folderPath) return;
+    if (!folderPath) {
+      this.isFolderLoading = false;
+      return
+    };
     // const prefiles = await fetchPreFiles(folderPath);
     // const files = prefiles.filter((file) => !isIgnored(file.path));
     // let resFile: ConfirmFileRecord | null = null;
@@ -249,6 +256,8 @@ class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
     // await this.processFiles(combinedFiles);
     const labels = await fetchLabels();
     this.setLabels!(labels);
+    console.log("handleFolderUpload end");
+    this.isFolderLoading = false;
   }
 
   @Snippet
@@ -312,11 +321,20 @@ class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
       {
         // @ts-ignore
         this.importButton().icon(Icon.FilePlus).fn(this.handleFileUpload);
-        // @ts-ignore
-        this.importButton()
+
+        if (this.isFolderLoading) {
           // @ts-ignore
-          .icon(Icon.FolderPlus)
-          .fn(this.handleFolderUpload);
+          this.importButton()
+            // @ts-ignore
+            .icon(Icon.SpinLoader)
+
+        } else {
+          // @ts-ignore
+          this.importButton()
+            // @ts-ignore
+            .icon(Icon.FolderPlus)
+            .fn(this.handleFolderUpload);
+        }
       }
     }
   }
