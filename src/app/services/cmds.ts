@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import WaveSurfer from "wavesurfer.js";
 import { FileRecord, NodeRecord } from "../data/global_env";
 import { LabelRecord, PreFileInfo } from "../data/type";
+import * as pako from 'pako';
 
 export async function importFile(path: string): Promise<any> {
   return await invoke("import_file", { path });
@@ -19,7 +20,7 @@ export async function getPdfBase64(path: string): Promise<Array<string>> {
 }
 
 export async function loadAudio(path: string): Promise<Blob> {
-  const audioData: Array<number> = await invoke("get_audio_array", { path });
+  const audioData: number = await invoke("get_audio_array", { path });
   const blob = new Blob([new Uint8Array(audioData)], { type: "audio/mp3" });
   return blob;
 }

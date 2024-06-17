@@ -26,6 +26,8 @@ import Spectrogram from "wavesurfer.js/dist/plugins/spectrogram.esm.js";
 import { Icon } from "../../icon/all_icon.view";
 import { darkModeState } from "../../state/dark_mode_state";
 import { loadAudio } from "../../app/services/cmds";
+import { convertFileSrc } from '@tauri-apps/api/core';
+
 
 interface AudioPlayerProp {
   src: ContentProp<string>;
@@ -42,8 +44,11 @@ class AudioPlayer implements AudioPlayerProp {
   wavesurfer: WaveSurfer | null = null;
   isPlaying: boolean = false;
   loading: boolean = true;
+  inputFileRef: HTMLInputElement | null = null;
+  audioArrayBuffer: ArrayBuffer | null = null;
 
   setupWaveSurfer() {
+    const assetUrl = convertFileSrc(this.src);
     if (this.waveForm) {
       this.wavesurfer = WaveSurfer.create({
         container: this.waveForm,
@@ -59,8 +64,9 @@ class AudioPlayer implements AudioPlayerProp {
           Spectrogram.create({
             labels: false,
           }),
-        ],
+        ]
       });
+      this.wavesurfer.load(assetUrl);
       this.wavesurfer.on("finish", () => {
         this.isPlaying = false;
       });
@@ -69,34 +75,53 @@ class AudioPlayer implements AudioPlayerProp {
     }
   }
 
-  @Watch("src")
-  srcChanged() {
-    if (this.wavesurfer && this.src) {
-      this.loading = true;
-      loadAudio(this.src)
-        .then((blob) => {
-          this.wavesurfer?.loadBlob(blob);
-          this.loading = false;
-        })
-        .catch((error) => {
-          console.error("Failed to load audio:", error);
-        });
-    }
+  setAudio() {
+    // const assetUrl = convertFileSrc(this.src);
+    // console.log("assetUrl", assetUrl);
+    // fetch(assetUrl)
+    //   .then(response => {
+    //     if (!response.ok) {
+    //       throw new Error('Network response was not ok ' + response.statusText);
+    //     }
+    //     return response.arrayBuffer();
+    //   })
+    //   .then(data => {
+    //     console.log("Binary data:", data);
+    //     // 这里的 data 是文件的二进制数据，可以根据需要进行处理
+    //   })
+    //   .catch(error => {
+    //     console.error('Fetch error:', error);
+    //   });
+
+    // loadAudio(this.src)
+    //   .then((blob) => {
+    //     console.log("loaded audio", blob)
+    //     this.wavesurfer?.loadBlob(blob);
+    //     this.loading = false;
+    //   })
+    //   .catch((error) => {
+    //     console.error("Failed to load audio:", error);
+    //   });
   }
+
+  didMount() {
+    this.setAudio();
+  }
+
+  // @Watch("src")
+  // srcChanged() {
+  //   if (this.wavesurfer && this.src) {
+  //     this.loading = true;
+  //     this.setAudio();
+  //   }
+  // }
 
   setWaveForm(ref: HTMLElement) {
     this.waveForm = ref;
     this.setupWaveSurfer();
-    if (this.src) {
-      loadAudio(this.src)
-        .then((blob) => {
-          this.wavesurfer?.loadBlob(blob);
-          this.loading = false;
-        })
-        .catch((error) => {
-          console.error("Failed to load audio:", error);
-        });
-    }
+    // if (this.src) {
+    //   this.setAudio();
+    // }
   }
 
   handlePlay() {

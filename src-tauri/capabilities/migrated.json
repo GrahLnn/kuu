@@ -20,6 +20,7 @@
     "store:allow-save",
     "store:allow-load",
     "store:default",
-    "store:allow-entries"
+    "store:allow-entries",
+    "websocket:default"
   ]
 }

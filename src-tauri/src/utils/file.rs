@@ -29,7 +29,7 @@ pub struct PreFileInfo {
     pub folders: Vec<String>,
 }
 
-fn format_bytes(bytes: u64) -> String {
+pub fn format_bytes(bytes: u64) -> String {
     if bytes == 0 {
         return "0 Bytes".to_string();
     }
@@ -200,7 +200,6 @@ pub async fn fetch_file_by_path(path: String) -> SurrealResult<FileRecord> {
     let params = Some(vec![("path", path.as_str())]);
     let mut res = db::query(sql, params, None::<Vec<(&str, Vec<String>)>>).await?;
     let file: Option<FileRecord> = res.take(0)?;
-    dbg!(&file);
     Ok(file.unwrap())
 }
 

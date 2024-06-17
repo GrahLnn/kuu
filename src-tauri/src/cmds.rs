@@ -18,6 +18,8 @@ use std::path::Path;
 use std::sync::{Arc, Mutex};
 use surrealdb::Result as SurrealResult;
 use tauri::command;
+use flate2::{write::GzEncoder, Compression};
+use std::io::prelude::*;
 
 type CmdResult<T = ()> = Result<T, String>;
 
@@ -78,11 +80,9 @@ pub async fn get_pdf_base64(path: String) -> CmdResult<Vec<String>> {
 
 #[command]
 pub async fn get_audio_array(path: String) -> CmdResult<Vec<u8>> {
-    let result = audio::read_audio_file(path).await;
-    match result {
-        Ok(audio_array) => Ok(audio_array),
-        Err(e) => Err(e),
-    }
+    let data = audio::read_audio_file(path)?;
+    
+    Ok(data)
 }
 
 #[command]

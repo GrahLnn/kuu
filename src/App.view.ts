@@ -22,6 +22,7 @@ import * as _ from "lodash";
 import { filtersStore } from "./app/services/tauri";
 import DemoWarning from "./component/notification/demo_warning.view";
 import { Guide } from "./app/data/type";
+import { connectWebSocket } from "./app/services/websocket";
 
 @Main
 @View
@@ -211,6 +212,7 @@ class App {
     //   );
     //   this.importHistory = updatedHistory;
     // }, 1000);
+    // connectWebSocket();
   }
 
   willUnmount() {

@@ -44,6 +44,7 @@
   "version": "0.0.1",
   "identifier": "kuu",
   "plugins": {},
+  
   "app": {
     "windows": [
       {
@@ -55,7 +56,11 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self' ipc: http://ipc.localhost; img-src 'self' asset: http://asset.localhost",
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["**"]
+      }
     }
   }
 }

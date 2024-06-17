@@ -8,3 +8,4 @@ pub mod node;
 pub mod pdf;
 pub mod service;
 pub mod common;
+pub mod websocket;

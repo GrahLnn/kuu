@@ -2,16 +2,25 @@
 mod cmds;
 mod database;
 mod utils;
-
 use crate::utils::dirs;
+use crate::utils::websocket;
 use tauri::Manager;
 
 pub fn run() {
+    tauri::async_runtime::spawn(async {
+        if let Err(e) = websocket::start_server().await {
+            eprintln!("Failed to start server: {}", e);
+        }
+    });
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::new().build())
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_websocket::init())
         .setup(|app| {
             let main_window = app.get_webview_window("main").unwrap();
-            main_window.eval("setTimeout(() => window.location.reload(), 50)").unwrap();
+            main_window
+                .eval("setTimeout(() => window.location.reload(), 100)")
+                .unwrap();
 
             let app_handle = app.handle().clone();
             tokio::spawn(async move {
