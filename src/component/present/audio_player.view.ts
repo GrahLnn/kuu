@@ -75,38 +75,38 @@ class AudioPlayer implements AudioPlayerProp {
     }
   }
 
-  setAudio() {
-    // const assetUrl = convertFileSrc(this.src);
-    // console.log("assetUrl", assetUrl);
-    // fetch(assetUrl)
-    //   .then(response => {
-    //     if (!response.ok) {
-    //       throw new Error('Network response was not ok ' + response.statusText);
-    //     }
-    //     return response.arrayBuffer();
-    //   })
-    //   .then(data => {
-    //     console.log("Binary data:", data);
-    //     // 这里的 data 是文件的二进制数据，可以根据需要进行处理
-    //   })
-    //   .catch(error => {
-    //     console.error('Fetch error:', error);
-    //   });
+  // setAudio() {
+  //   // const assetUrl = convertFileSrc(this.src);
+  //   // console.log("assetUrl", assetUrl);
+  //   // fetch(assetUrl)
+  //   //   .then(response => {
+  //   //     if (!response.ok) {
+  //   //       throw new Error('Network response was not ok ' + response.statusText);
+  //   //     }
+  //   //     return response.arrayBuffer();
+  //   //   })
+  //   //   .then(data => {
+  //   //     console.log("Binary data:", data);
+  //   //     // 这里的 data 是文件的二进制数据，可以根据需要进行处理
+  //   //   })
+  //   //   .catch(error => {
+  //   //     console.error('Fetch error:', error);
+  //   //   });
 
-    // loadAudio(this.src)
-    //   .then((blob) => {
-    //     console.log("loaded audio", blob)
-    //     this.wavesurfer?.loadBlob(blob);
-    //     this.loading = false;
-    //   })
-    //   .catch((error) => {
-    //     console.error("Failed to load audio:", error);
-    //   });
-  }
+  //   // loadAudio(this.src)
+  //   //   .then((blob) => {
+  //   //     console.log("loaded audio", blob)
+  //   //     this.wavesurfer?.loadBlob(blob);
+  //   //     this.loading = false;
+  //   //   })
+  //   //   .catch((error) => {
+  //   //     console.error("Failed to load audio:", error);
+  //   //   });
+  // }
 
-  didMount() {
-    this.setAudio();
-  }
+  // didMount() {
+  //   this.setAudio();
+  // }
 
   // @Watch("src")
   // srcChanged() {
@@ -161,30 +161,35 @@ class AudioPlayer implements AudioPlayerProp {
     }
   }
 
+  @Snippet
+  ctrlPannel() {
+    div().class(
+      "flex items-center justify-center gap-8 hover:bg-white/70 dark:hover:bg-white/10 rounded-lg px-6 py-1 hover:shadow-lg transition duration-500"
+    );
+    {
+      // @ts-ignore
+      this.ctrlButton().icon(Icon.MediaPrevious).onClick(this.moveToStart);
+
+      if (this.isPlaying) {
+        // @ts-ignore
+        this.ctrlButton().icon(Icon.MediaPause).onClick(this.handlePlay);
+      } else {
+        // @ts-ignore
+        this.ctrlButton().icon(Icon.MediaPlay).onClick(this.handlePlay);
+      } // @ts-ignore
+      this.ctrlButton().icon(Icon.MediaNext).onClick(this.moveToEnd);
+    }
+  }
+
   Body() {
     div().class(
       this.transparent
         ? "flex flex-col w-full items-center gap-4 rounded-lg bg-gray-100 dark:bg-[var(--dark-bg-blue-tertiary)] py-4 px-6"
-        : "flex flex-col w-full items-center gap-4 py-4 px-6 "
+        : "flex flex-col w-full items-center gap-4 py-4 px-6"
     );
     {
       div().class("w-full").id("waveform").ref(this.setWaveForm);
-      div().class(
-        "flex items-center justify-center gap-8 hover:bg-white/70 dark:hover:bg-white/10 rounded-lg px-6 py-1 hover:shadow-lg transition duration-500"
-      );
-      {
-        // @ts-ignore
-        this.ctrlButton().icon(Icon.MediaPrevious).onClick(this.moveToStart);
-
-        if (this.isPlaying) {
-          // @ts-ignore
-          this.ctrlButton().icon(Icon.MediaPause).onClick(this.handlePlay);
-        } else {
-          // @ts-ignore
-          this.ctrlButton().icon(Icon.MediaPlay).onClick(this.handlePlay);
-        } // @ts-ignore
-        this.ctrlButton().icon(Icon.MediaNext).onClick(this.moveToEnd);
-      }
+      this.ctrlPannel();
     }
   }
 }

@@ -3,7 +3,7 @@ import WebSocket from '@tauri-apps/plugin-websocket';
 export async function connectWebSocket() {
     try {
         const ws = await WebSocket.connect('ws://127.0.0.1:8080');
-        let fileData = [];
+        let fileData: any = [];
 
         ws.addListener((msg) => {
             if (msg.type === 'Text') {

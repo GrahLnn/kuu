@@ -520,7 +520,7 @@ class NodeBox implements NodeBoxProp, MenuEnv, GlobalData, FilterEnv {
             for (const file of this.files) {
               switch (file.logo) {
                 case FileType.PDF:
-                  // PDFViewer(file.path);
+                  PDFViewer(file.path);
                   break;
                 case FileType.Audio:
                   AudioPlayer(file.path).transparent(false);
