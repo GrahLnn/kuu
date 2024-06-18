@@ -7,12 +7,12 @@ import {
   type Pretty,
   Content,
   canvas,
-  Snippet
+  Snippet,
 } from "@dlightjs/dlight";
-import 'pdfjs-dist/web/pdf_viewer.css';
-import { convertFileSrc } from '@tauri-apps/api/core';
+import "pdfjs-dist/web/pdf_viewer.css";
+import { convertFileSrc } from "@tauri-apps/api/core";
 //@ts-ignore
-import * as pdfjsLib from '../../mod/pdf.mjs';
+import * as pdfjsLib from "../../mod/pdf.mjs";
 import { Icon } from "../../icon/all_icon.view";
 
 interface PDFViewerProp {
@@ -26,65 +26,94 @@ class PDFViewer implements PDFViewerProp {
   canvasRef: HTMLCanvasElement | null = null;
   wrapperRef: HTMLDivElement | null = null;
   contentRef: HTMLDivElement | null = null;
+  canvas2Ref: HTMLCanvasElement | null = null;
+  wrapper2Ref: HTMLDivElement | null = null;
+  content2Ref: HTMLDivElement | null = null;
   pageCnt = 0;
   curPage = 1;
+  pdf: any = null;
+  pageCache: Map<number, any> = new Map();
 
   async didMount() {
     const canvas = this.canvasRef!;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
+    const canvas2 = this.canvas2Ref!;
+    const ctx2 = canvas2.getContext("2d");
 
-    pdfjsLib.GlobalWorkerOptions.workerSrc = '../../src/mod/pdf.worker.mjs';
-    pdfjsLib.getDocument(this.assetUrl).promise.then((pdf: any) => {
-      pdf.getPage(1).then((page: any) => {
-        this.pageCnt = pdf.numPages;
-        this.renderPage(page, canvas, ctx!);
-      });
-    });
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "../../src/mod/pdf.worker.mjs";
+    this.pdf = await pdfjsLib.getDocument(this.assetUrl).promise;
+    this.pageCnt = this.pdf.numPages;
+
+    // Load first two pages
+    const page1 = await this.pdf.getPage(1);
+    this.pageCache.set(1, page1);
+    this.renderPage(page1, canvas, ctx!);
+
+    if (this.pageCnt > 1) {
+      const page2 = await this.pdf.getPage(2);
+      this.pageCache.set(2, page2);
+      this.renderPage(page2, canvas2, ctx2!);
+    }
 
     // 监听 contentRef 大小变化
-    const resizeObserver = new ResizeObserver(() => {
-      this.doResize();
-    });
-    resizeObserver.observe(this.contentRef!);
+    // const resizeObserver = new ResizeObserver(() => {
+    //   this.doResize();
+    // });
+    // resizeObserver.observe(this.contentRef!);
 
     // 初始缩放
     this.doResize();
   }
 
-  onPrePage() {
+  async onPrePage() {
     if (this.curPage <= 1) return;
-    const canvas = this.canvasRef!;
-    const ctx = canvas.getContext('2d');
-
-    pdfjsLib.getDocument(this.assetUrl).promise.then((pdf: any) => {
-      pdf.getPage(this.curPage - 1).then((page: any) => {
-        this.renderPage(page, canvas, ctx!);
-        this.curPage -= 1;
-      });
-    });
+    this.curPage -= 2;
+    await this.loadAndRenderPages();
   }
 
-  onNextPage() {
-    if (this.curPage >= this.pageCnt) return;
-    const canvas = this.canvasRef!;
-    const ctx = canvas.getContext('2d');
-
-    pdfjsLib.getDocument(this.assetUrl).promise.then((pdf: any) => {
-      pdf.getPage(this.curPage + 1).then((page: any) => {
-        this.renderPage(page, canvas, ctx!);
-        this.curPage += 1;
-      });
-    });
+  async onNextPage() {
+    if (this.curPage + 2 > this.pageCnt) return;
+    this.curPage += 2;
+    await this.loadAndRenderPages();
   }
 
-  renderPage(page: any, canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
+  async loadAndRenderPages() {
+    const canvas = this.canvasRef!;
+    const ctx = canvas.getContext("2d");
+    const canvas2 = this.canvas2Ref!;
+    const ctx2 = canvas2.getContext("2d");
+
+    let page1 = this.pageCache.get(this.curPage);
+    if (!page1) {
+      page1 = await this.pdf.getPage(this.curPage);
+      this.pageCache.set(this.curPage, page1);
+    }
+    this.renderPage(page1, canvas, ctx!);
+
+    if (this.curPage + 1 <= this.pageCnt) {
+      let page2 = this.pageCache.get(this.curPage + 1);
+      if (!page2) {
+        page2 = await this.pdf.getPage(this.curPage + 1);
+        this.pageCache.set(this.curPage + 1, page2);
+      }
+      this.renderPage(page2, canvas2, ctx2!);
+    } else {
+      ctx2!.clearRect(0, 0, canvas2.width, canvas2.height); // Clear second canvas if no second page
+    }
+  }
+
+  renderPage(
+    page: any,
+    canvas: HTMLCanvasElement,
+    ctx: CanvasRenderingContext2D
+  ) {
     const viewport = page.getViewport({ scale: 1 });
 
     canvas.height = viewport.height;
     canvas.width = viewport.width;
     page.render({
       canvasContext: ctx,
-      viewport: viewport
+      viewport: viewport,
     });
   }
 
@@ -104,6 +133,30 @@ class PDFViewer implements PDFViewerProp {
     }
   }
 
+  doResize() {
+    const cont = this.contentRef!;
+    const wrap = this.wrapperRef!;
+
+    const widthScale = wrap.clientWidth / cont.clientWidth;
+    const heightScale = 500 / cont.clientHeight;
+    const scale = Math.min(widthScale, heightScale);
+    const scaledHeight = cont.clientHeight * scale;
+    console.log(
+      "scale",
+      scale,
+      this.canvasRef!.width + this.canvas2Ref!.width,
+      cont.clientWidth,
+      cont.clientHeight,
+      cont.clientHeight * scale,
+      scaledHeight
+    );
+    cont.style.transform = `scale(${scale})`;
+    // cont.style.transformOrigin = "top";
+
+    // 设置 wrap 的高度
+    wrap.style.height = `${scaledHeight}px`;
+  }
+
   @Snippet
   ctrlPannel() {
     div().class(
@@ -111,44 +164,67 @@ class PDFViewer implements PDFViewerProp {
     );
     {
       // @ts-ignore
-      this.ctrlButton().icon(Icon.MediaPrevious).onClick(this.onPrePage);
-
-      div(`${this.curPage}/${this.pageCnt}`).class("text-md");
-
+      this.ctrlButton()
+        // @ts-ignore
+        .icon(Icon.arrowBoldLeftFromLine)
+        .onClick(this.onPrePage);
+      div().class("flex items-center gap-2");
+      {
+        div(`${this.curPage}`).class(
+          "text-[14px] text-black/70 dark:text-white/80 font-semibold"
+        );
+        div(`(${this.pageCnt})`).class(
+          "text-[8px] text-black/70 dark:text-white/80 "
+        );
+        if (this.curPage + 1 <= this.pageCnt) {
+          div(`${this.curPage + 1}`).class(
+            "text-[14px] text-black/70 dark:text-white/80 font-semibold"
+          );
+        }
+      }
       // @ts-ignore
-      this.ctrlButton().icon(Icon.MediaNext).onClick(this.onNextPage);
+      this.ctrlButton()
+        // @ts-ignore
+        .icon(Icon.arrowBoldRightFromLine)
+        .onClick(this.onNextPage);
     }
   }
 
-  doResize() {
-    const cont = this.contentRef!;
-    const wrap = this.wrapperRef!;
-    const widthScale = wrap.clientWidth / cont.clientWidth;
-    const heightScale = (wrap.clientHeight) / cont.clientHeight
-    const scale = Math.min(widthScale, heightScale);
-    cont.style.transform = `scale(${scale})`;
-    console.log(widthScale, heightScale, scale);
-    cont.style.transformOrigin = 'top';
-  }
-
   Body() {
-    div().class("flex flex-col");
+    div()
+      .class("flex flex-col pb-20")
+      .ref((r) => {
+        this.wrapper2Ref = r;
+      });
     {
-      div().ref((r) => {
-        this.wrapperRef = r;
-      }).class("h-[500px]");
+      div()
+        .class("flex justify-center mt-4")
+        .ref((r) => {
+          this.wrapperRef = r;
+        });
       {
-        div().ref((r) => {
-          this.contentRef = r;
-        }).class("flex justify-center items-center p-4");
+        div()
+          .ref((r) => {
+            this.contentRef = r;
+          })
+          .class("flex justify-center items-center p-4 gap-2");
         {
-          canvas().class("relative").ref((r) => {
-            this.canvasRef = r;
-          });
+          canvas()
+            .class("relative")
+            .ref((r) => {
+              this.canvasRef = r;
+            });
+          canvas()
+            .class("relative")
+            .ref((r) => {
+              this.canvas2Ref = r;
+            });
         }
-
       }
-      this.ctrlPannel();
+      div().class("flex justify-center");
+      {
+        this.ctrlPannel();
+      }
     }
   }
 }
