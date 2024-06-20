@@ -28,7 +28,7 @@ pub async fn create_node_record(node: NodeRecord) -> SurrealResult<()> {
     let check: Option<bool> = res.take(0)?;
     if check.unwrap() {
         let _: Option<NodeRecord> =
-            db::create_with_init_id("node", &node.clone().title, node).await?;
+            db::create_with_init_id("node", &node.clone().hash, node).await?;
     }
     Ok(())
 }

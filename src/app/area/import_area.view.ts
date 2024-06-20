@@ -68,7 +68,7 @@ import ImgShow from "../../component/present/img_show.view";
 import * as _ from "lodash";
 import { isIgnored } from "../data/utils";
 
-interface ImportAreaProps { }
+interface ImportAreaProps {}
 
 @View
 class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
@@ -177,8 +177,8 @@ class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
     });
     if (!folderPath) {
       this.isFolderLoading = false;
-      return
-    };
+      return;
+    }
     // const prefiles = await fetchPreFiles(folderPath);
     // const files = prefiles.filter((file) => !isIgnored(file.path));
     // let resFile: ConfirmFileRecord | null = null;
@@ -326,8 +326,7 @@ class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
           // @ts-ignore
           this.importButton()
             // @ts-ignore
-            .icon(Icon.SpinLoader)
-
+            .icon(Icon.SpinLoader);
         } else {
           // @ts-ignore
           this.importButton()
@@ -340,7 +339,7 @@ class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
   }
 
   @Snippet
-  webWindow() { }
+  webWindow() {}
 
   @Snippet
   history() {
@@ -386,7 +385,9 @@ class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
         }
       }
     } else {
-      div("Drag file or folder here or click the add button to import.").class(
+      div(
+        "Drag file or folder here or click the add button to import.(drag & url now allow)"
+      ).class(
         "flex items-center justify-center flex-grow text-center dark:text-[#fefefe] text-[#676769] text-[12px] px-4 fade-in"
       );
     }
@@ -429,11 +430,9 @@ class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
           ToggleLabel(label.title)
             .toggle(this.curNode!.labels.includes(label.title))
             .onToggle(() => {
-              linkNodeToLabelReturnNew(this.curNode!, label).then(
-                (node) => {
-                  this.curNode = node;
-                }
-              );
+              linkNodeToLabelReturnNew(this.curNode!, label).then((node) => {
+                this.curNode = node;
+              });
             })
             .disToggle(() => {
               deleteNodeLabelLink(this.curNode!.title, label.title).then(
@@ -528,7 +527,10 @@ class ImportArea implements ImportAreaProps, MenuEnv, GlobalData {
           this.labelChooseZone();
         }
         if (this.curFile.logo === FileType.PDF) {
-          PDFViewer(this.curFile.path);
+          div().class("w-[700px]");
+          {
+            PDFViewer(this.curFile.path);
+          }
         } else if (this.curFile.logo === FileType.Audio) {
           AudioPlayer(this.curFile.path);
         } else if (this.curFile.logo === FileType.Image) {

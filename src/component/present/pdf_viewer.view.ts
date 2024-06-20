@@ -8,6 +8,7 @@ import {
   Content,
   canvas,
   Snippet,
+  Watch,
 } from "@dlightjs/dlight";
 import "pdfjs-dist/web/pdf_viewer.css";
 import { convertFileSrc } from "@tauri-apps/api/core";
@@ -35,6 +36,16 @@ class PDFViewer implements PDFViewerProp {
   pageCache: Map<number, any> = new Map();
 
   async didMount() {
+    this.renderPDF();
+  }
+
+  @Watch
+  updateSrc() {
+    this.assetUrl = convertFileSrc(this.src);
+    this.renderPDF();
+  }
+
+  async renderPDF() {
     const canvas = this.canvasRef!;
     const ctx = canvas.getContext("2d");
     const canvas2 = this.canvas2Ref!;
@@ -64,7 +75,6 @@ class PDFViewer implements PDFViewerProp {
     // 初始缩放
     this.doResize();
   }
-
   async onPrePage() {
     if (this.curPage <= 1) return;
     this.curPage -= 2;

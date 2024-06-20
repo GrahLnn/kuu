@@ -34,29 +34,42 @@ pub async fn create_import(
 
     let node = node::gen_node(node_title.clone());
     let _ = node::create_node_record(node.clone()).await;
+    let exist_label = label::get_existence_labels()
+        .await
+        .map_err(|e| e.to_string()).unwrap();
+    
+    let mut labels_record = Vec::new();
 
     for title in labels {
-        let label = label::LabelRecord {
-            title: title.clone(),
-            is_assignable: true,
-            time: chrono::Utc::now().timestamp_millis(),
-            hash: common::generate_random_string(32),
-        };
-        let _ = label::create_label_record(label.clone()).await;
-        graph::link_node_to_label(node.clone(), vec![label]).await;
+        if let Some(existing_label) = exist_label.iter().find(|&l| l.title == title) {
+            labels_record.push(existing_label.clone());
+        } else {
+            let label = label::LabelRecord {
+                title: title.clone(),
+                is_assignable: true,
+                time: chrono::Utc::now().timestamp_millis(),
+                hash: common::generate_random_string(32),
+            };
+            let _ = label::create_label_record(label.clone()).await;
+            labels_record.push(label);
+        }
     }
 
-    for title in self_labels {
-        let label = label::LabelRecord {
-            title: title.clone(),
-            is_assignable: false,
-            time: chrono::Utc::now().timestamp_millis(),
-            hash: common::generate_random_string(32),
-        };
-        let _ = label::create_label_record(label.clone()).await;
-        graph::link_node_to_label(node.clone(), vec![label]).await;
+    for title in self_labels.clone() {
+        if let Some(existing_label) = exist_label.iter().find(|&l| l.title == title) {
+            labels_record.push(existing_label.clone());
+        } else {
+            let label = label::LabelRecord {
+                title: title.clone(),
+                is_assignable: false,
+                time: chrono::Utc::now().timestamp_millis(),
+                hash: common::generate_random_string(32),
+            };
+            let _ = label::create_label_record(label.clone()).await;
+            labels_record.push(label);
+        }
     }
-
+    let node = graph::link_node_to_label(node.clone(), labels_record).await;
     graph::link_node_to_file(node.clone(), file.clone()).await;
     let node = node::fetch_node(node_title).await?;
 
@@ -192,7 +205,7 @@ pub async fn import_file_with_node(
     let _: Option<FileRecord> = db::create_with_init_id("file", &file.hash, file.clone())
         .await
         .map_err(|e| e.to_string())?;
-    graph::link_node_to_label(node.clone(), labels).await;
+    let node = graph::link_node_to_label(node.clone(), labels).await;
     graph::link_node_to_file(node.clone(), file).await;
 
     Ok(())

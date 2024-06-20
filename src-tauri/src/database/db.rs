@@ -47,6 +47,13 @@ pub async fn select<U: DeserializeOwned + Debug>(table: &str) -> Result<Vec<U>> 
     Ok(result)
 }
 
+pub async fn select_with_id<U: DeserializeOwned + Debug>(table: &str, id: &str) -> Result<Option<U>> {
+    let db = DB.get().expect("DB not initialized");
+    let result: Option<U> = db.select((table, id)).await?;
+    
+    Ok(result)
+}
+
 pub async fn delete(table: &str, id: &str) -> Result<Option<Thing>> {
     let db = DB.get().expect("DB not initialized");
     db.delete((table, id)).await

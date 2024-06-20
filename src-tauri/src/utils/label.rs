@@ -1,7 +1,7 @@
-use std::collections::HashSet;
-use std::hash::{Hash, Hasher};
 use crate::database::db;
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
+use std::hash::{Hash, Hasher};
 use surrealdb::Result;
 
 use super::common;
@@ -34,10 +34,13 @@ pub async fn create_label_record(label: LabelRecord) -> Result<()> {
     let params = Some(vec![("title", label.title.as_str())]);
     let mut res = db::query(sql, params, None::<Vec<(&str, Vec<String>)>>).await?;
     let check: Option<bool> = res.take(0)?;
-    if check == Some(false) {
+
+    if !check.unwrap() {
         return Ok(());
     }
-    let _: Option<LabelRecord> = db::create_with_init_id("label", &label.clone().hash, label).await?;
+    let r: Option<LabelRecord> =
+        db::create_with_init_id("label", &label.clone().hash, label).await?;
+    dbg!(r);
     Ok(())
 }
 
@@ -49,13 +52,14 @@ pub async fn fetch_labels() -> Result<Vec<LabelRecord>> {
 
 pub async fn get_existence_labels() -> Result<Vec<LabelRecord>> {
     let labels: Vec<LabelRecord> = db::select("label").await?;
-    
+
     Ok(labels)
 }
 
 pub async fn just_create_label(labels: Vec<LabelRecord>) -> Result<()> {
     for label in labels {
-        let _: Option<LabelRecord> = db::create_with_init_id("label", &label.clone().hash, label).await?;
+        let _: Option<LabelRecord> =
+            db::create_with_init_id("label", &label.clone().hash, label).await?;
     }
     Ok(())
 }

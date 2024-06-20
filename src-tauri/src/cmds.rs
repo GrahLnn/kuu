@@ -25,11 +25,12 @@ type CmdResult<T = ()> = Result<T, String>;
 
 #[command]
 pub async fn import_file(path: String) -> CmdResult<(FileRecord, Option<NodeRecord>)> {
+    dbg!("import_file");
     let path = Path::new(&path);
     let record = service::gen_file_record(path)
         .await
         .map_err(|e| e.to_string())?;
-
+    dbg!(&record);
     match service::create_import(record, vec![]).await {
         SurrealResult::Ok((file, node)) => Ok((file, node)),
         SurrealResult::Err(e) => Err(e.to_string()),

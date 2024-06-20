@@ -27,7 +27,7 @@ pub async fn link_node_to_file(node: NodeRecord, file: FileRecord) -> () {
     let _ = db::query(sql, params1, params2).await;
 }
 
-pub async fn link_node_to_label(node: NodeRecord, labels: Vec<LabelRecord>) -> () {
+pub async fn link_node_to_label(node: NodeRecord, labels: Vec<LabelRecord>) -> NodeRecord {
     // let sql = r#"
     //     LET $labels = <array<record>>$labelsID;
     //     LET $node = <record>$nodeID;
@@ -61,7 +61,9 @@ pub async fn link_node_to_label(node: NodeRecord, labels: Vec<LabelRecord>) -> (
         .unwrap();
     let labeled: Vec<LabelRecord> = res.take(1).unwrap();
     let mut fileter_labels: Vec<LabelRecord> = labels;
+
     common::remove_duplicates(&mut fileter_labels, &labeled);
+
     let sql = r#"
         LET $labels = <array<record>>$labelsID;
         LET $node = <record>$nodeID;
@@ -74,7 +76,7 @@ pub async fn link_node_to_label(node: NodeRecord, labels: Vec<LabelRecord>) -> (
             fn::update_link($node, $label)
         }
     "#;
-    let node_id = format!("node:{}", node.hash);
+
     let mut labels_id = Vec::new();
     for label in fileter_labels {
         labels_id.push(format!("label:{}", label.hash));
@@ -82,6 +84,13 @@ pub async fn link_node_to_label(node: NodeRecord, labels: Vec<LabelRecord>) -> (
     let params = Some(vec![("nodeID", node_id.as_str())]);
     let params2 = Some(vec![("labelsID", labels_id)]);
     let _ = db::query(sql, params, params2).await;
+
+    let node: Option<NodeRecord> = db::select_with_id("node", &node.hash)
+        .await
+        .map_err(|e| e.to_string())
+        .unwrap();
+
+    node.unwrap()
 }
 
 pub async fn delete_node_label_link(node_title: String, label_title: String) -> () {
