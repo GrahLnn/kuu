@@ -51,7 +51,7 @@ class PDFViewer implements PDFViewerProp {
     const canvas2 = this.canvas2Ref!;
     const ctx2 = canvas2.getContext("2d");
 
-    pdfjsLib.GlobalWorkerOptions.workerSrc = "../../src/mod/pdf.worker.mjs";
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "/assets/pdf.worker.mjs";
     this.pdf = await pdfjsLib.getDocument(this.assetUrl).promise;
     this.pageCnt = this.pdf.numPages;
 

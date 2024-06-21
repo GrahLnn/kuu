@@ -28,6 +28,8 @@
     "pako": "^2.1.0",
     "path": "^0.12.7",
     "pspdfkit": "^2024.3.0",
+    "vite-plugin-node-polyfills": "^0.22.0",
+    "vite-plugin-static-copy": "^1.0.5",
     "wavesurfer.js": "^7.7.11"
   },
   "devDependencies": {
